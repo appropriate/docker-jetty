@@ -24,6 +24,7 @@ for version in "${versions[@]}"; do
 	suffix="${version#*-}" # "jre7"
 
 	fullVersion="$(grep -m1 'ENV JETTY_VERSION ' "$version/Dockerfile" | cut -d' ' -f3)"
+	fullVersion="${fullVersion%.v*}"
 	majorMinorVersion="${fullVersion%.*}"
 
 	versionAliases=( $fullVersion-$suffix $majorMinorVersion-$suffix $majorVersion-$suffix ) # 8.0.14-jre7 8.0-jre7 8-jre7
