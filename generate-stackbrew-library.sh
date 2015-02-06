@@ -12,9 +12,8 @@ cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
 versions=( */ )
 versions=( "${versions[@]%/}" )
-url='git://github.com/docker-library/jetty'
+url='git://github.com/md5/docker-jetty'
 
-echo '# maintainer: InfoSiftr <github@infosiftr.com> (@infosiftr)'
 echo '# maintainer: Mike Dillon <mike@embody.org> (@md5)'
 
 for version in "${versions[@]}"; do
