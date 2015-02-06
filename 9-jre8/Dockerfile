@@ -17,13 +17,8 @@ RUN curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
     && curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
     && gpg --verify jetty.tar.gz.asc \
     && tar -xvf jetty.tar.gz --strip-components=1 \
+    && sed -i '/jetty-logging/d' etc/jetty.conf \
     && rm jetty.tar.gz*
-
-RUN { \
-        echo '<?xml version="1.0"?>'; \
-        echo '<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">'; \
-        echo '<Configure id="Server" class="org.eclipse.jetty.server.Server"/>'; \
-    } > etc/jetty-logging.xml
 
 EXPOSE 8080
 CMD ["jetty.sh", "run"]
