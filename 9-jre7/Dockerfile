@@ -1,5 +1,8 @@
 FROM java:7-jre
 
+# add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
+RUN groupadd -r jetty && useradd -r -g jetty jetty
+
 ENV JETTY_HOME /usr/local/jetty
 ENV PATH $JETTY_HOME/bin:$PATH
 RUN mkdir -p "$JETTY_HOME"
