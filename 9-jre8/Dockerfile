@@ -13,7 +13,7 @@ RUN gpg --keyserver pool.sks-keyservers.net --recv-keys \
         5DE533CB43DAF8BC3E372283E7AE839CD7C58886
 
 ENV JETTY_MAJOR 9
-ENV JETTY_VERSION 9.2.8.v20150217
+ENV JETTY_VERSION 9.2.9.v20150224
 ENV JETTY_TGZ_URL http://eclipse.org/downloads/download.php?r=1&file=/jetty/stable-$JETTY_MAJOR/dist/jetty-distribution-$JETTY_VERSION.tar.gz
 
 RUN curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
