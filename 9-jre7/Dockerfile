@@ -24,5 +24,14 @@ RUN curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
     && rm -fr demo-base javadoc \
     && rm jetty.tar.gz*
 
+ENV JETTY_BASE /var/lib/jetty
+RUN mkdir -p "$JETTY_BASE" \
+    && chown jetty:jetty "$JETTY_BASE"
+WORKDIR $JETTY_BASE
+
+# Get the list of modules in the default start.ini and build new base with those modules, then add setuid
+RUN java -jar "$JETTY_HOME/start.jar" --add-to-startd="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
+    && java -jar "$JETTY_HOME/start.jar" --add-to-startd=setuid
+
 EXPOSE 8080
 CMD ["jetty.sh", "run"]
