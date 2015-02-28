@@ -25,8 +25,7 @@ RUN curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
     && rm jetty.tar.gz*
 
 ENV JETTY_BASE /var/lib/jetty
-RUN mkdir -p "$JETTY_BASE" \
-    && chown jetty:jetty "$JETTY_BASE"
+RUN mkdir -p "$JETTY_BASE" && chown jetty:jetty "$JETTY_BASE"
 WORKDIR $JETTY_BASE
 
 # Get the list of modules in the default start.ini and build new base with those modules, then add setuid
