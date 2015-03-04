@@ -34,9 +34,9 @@ RUN java -jar "$JETTY_HOME/start.jar" --add-to-startd="$(grep -- ^--module= "$JE
 
 ENV JETTY_RUN /run/jetty
 ENV JETTY_STATE $JETTY_RUN/jetty.state
-ENV TMPDIR $JETTY_RUN/tmp
-RUN mkdir -p "$JETTY_RUN/tmp" && chown -R jetty:jetty "$JETTY_RUN"
-VOLUME $JETTY_RUN
+ENV TMPDIR /tmp/jetty
+RUN mkdir -p "$JETTY_RUN" "$TMPDIR" && chown -R jetty:jetty "$JETTY_RUN" "$TMPDIR"
+VOLUME $JETTY_RUN $TMPDIR
 
 EXPOSE 8080
 CMD ["jetty.sh", "run"]
