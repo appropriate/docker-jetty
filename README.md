@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/md5/docker-jetty.png?label=ready&title=Ready)](https://waffle.io/md5/docker-jetty)
 # About this Repo
 
 This is the Git repo of the official Docker image for [jetty](https://registry.hub.docker.com/_/jetty/). See the
