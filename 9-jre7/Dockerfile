@@ -36,7 +36,6 @@ ENV JETTY_RUN /run/jetty
 ENV JETTY_STATE $JETTY_RUN/jetty.state
 ENV TMPDIR /tmp/jetty
 RUN mkdir -p "$JETTY_RUN" "$TMPDIR" && chown -R jetty:jetty "$JETTY_RUN" "$TMPDIR"
-VOLUME $JETTY_RUN $TMPDIR
 
 EXPOSE 8080
 CMD ["jetty.sh", "run"]
