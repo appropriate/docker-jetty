@@ -32,5 +32,10 @@ WORKDIR $JETTY_BASE
 RUN java -jar "$JETTY_HOME/start.jar" --add-to-startd="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
     && java -jar "$JETTY_HOME/start.jar" --add-to-startd=setuid
 
+ENV JETTY_RUN /run/jetty
+ENV JETTY_STATE $JETTY_RUN/jetty.state
+ENV TMPDIR /tmp/jetty
+RUN mkdir -p "$JETTY_RUN" "$TMPDIR" && chown -R jetty:jetty "$JETTY_RUN" "$TMPDIR"
+
 EXPOSE 8080
 CMD ["jetty.sh", "run"]
