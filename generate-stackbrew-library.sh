@@ -1,47 +1,63 @@
 #!/bin/bash
-set -e
+set -ueo pipefail
 
 declare -A aliases
 aliases=(
+	[9.2-jre7]='latest jre7'
+	[9.2-jre8]='jre8'
 )
-defaultVersion='9'
 defaultJava='7'
 defaultSuffix="jre${defaultJava}"
 
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
-versions=( */ )
-versions=( "${versions[@]%/}" )
+paths=( */ )
+paths=( "${paths[@]%/}" )
 url='git://github.com/md5/docker-jetty'
 
 echo '# maintainer: Mike Dillon <mike@embody.org> (@md5)'
+echo
 
-for version in "${versions[@]}"; do
-	commit="$(git log -1 --format='format:%H' -- "$version")"
+for path in "${paths[@]}"; do
+	commit="$(git log -1 --format='format:%H' -- "$path")"
 
-	majorVersion="${version%%-*}"
-	suffix="${version#*-}" # "jre7"
+	suffix="${path#*-}" # "jre7"
 
-	fullVersion="$(grep -m1 'ENV JETTY_VERSION ' "$version/Dockerfile" | cut -d' ' -f3)"
-	fullVersion="${fullVersion%.v*}"
-	majorMinorVersion="${fullVersion%.*}"
+	version="$(grep -m1 'ENV JETTY_VERSION ' "$path/Dockerfile" | cut -d' ' -f3)"
 
-	versionAliases=( $fullVersion-$suffix $majorMinorVersion-$suffix $majorVersion-$suffix ) # 8.0.14-jre7 8.0-jre7 8-jre7
-	if [ "$majorVersion" = "$defaultVersion" ]; then
-		versionAliases+=( $suffix ) # jre7
+	if [[ "$version" == *.v* ]]; then
+		# Release version
+		versionAliases=()
+		while [[ "$version" == *.* ]]; do
+			version="${version%.*}"
+			versionAliases+=("$version")
+		done
+	else
+		# Non-release version
+		versionAliases=("$version")
 	fi
 
+	# Output ${versionAliases[@]} without suffixes
+	# e.g. 9.2.10, 9.2, 9
 	if [ "$suffix" = "$defaultSuffix" ]; then
-		versionAliases+=( $fullVersion $majorMinorVersion $majorVersion ) # 8.0.14 8.0 8
-		if [ "$majorVersion" = "$defaultVersion" ]; then
-			versionAliases+=( latest )
-		fi
+		for va in "${versionAliases[@]}"; do
+			echo "$va: ${url}@${commit} $path"
+		done
 	fi
 
-	versionAliases+=( ${aliases[$version]} )
+	# Output ${versionAliases[@]} with suffixes
+	# e.g. 9.2.10-jre7, 9.2-jre7, 9-jre7
+	for va in "${versionAliases[@]}"; do
+		echo "$va-$suffix: ${url}@${commit} $path"
+	done
+
+	# Output custom aliases
+	# e.g. latest, jre7, jre8
+	if [ ${#aliases[$path]} -gt 0 ]; then
+		for va in ${aliases[$path]}; do
+			echo "$va: ${url}@${commit} $path"
+		done
+	fi
 
 	echo
-	for va in "${versionAliases[@]}"; do
-		echo "$va: ${url}@${commit} $version"
-	done
 done

@@ -1,4 +1,4 @@
-FROM java:7-jre
+FROM java:8-jre
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN groupadd -r jetty && useradd -r -g jetty jetty
@@ -12,9 +12,8 @@ WORKDIR $JETTY_HOME
 RUN gpg --keyserver pool.sks-keyservers.net --recv-keys \
         5DE533CB43DAF8BC3E372283E7AE839CD7C58886
 
-ENV JETTY_MAJOR 9
 ENV JETTY_VERSION 9.2.10.v20150310
-ENV JETTY_TGZ_URL http://eclipse.org/downloads/download.php?r=1&file=/jetty/stable-$JETTY_MAJOR/dist/jetty-distribution-$JETTY_VERSION.tar.gz
+ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
 
 RUN curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
     && curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
