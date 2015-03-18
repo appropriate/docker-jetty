@@ -4,19 +4,19 @@ set -ueo pipefail
 
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
-versions=( "$@" )
-if [ ${#versions[@]} -eq 0 ]; then
-	versions=( */ )
+paths=( "$@" )
+if [ ${#paths[@]} -eq 0 ]; then
+	paths=( */ )
 fi
-versions=( "${versions[@]%/}" )
+paths=( "${paths[@]%/}" )
 
 MAVEN_METADATA_URL='https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/maven-metadata.xml'
 
 available=( $( curl -sSL "$MAVEN_METADATA_URL" | grep -Eo '<(version)>[^<]*</\1>' | awk -F'[<>]' '{ print $3 }' | sort -Vr ) )
 
-for version in "${versions[@]}"; do
-	plainVersion="${version%%-*}" # "9.2"
-	suffix="${version#*-}" # "jre7"
+for path in "${paths[@]}"; do
+	version="${path%%-*}" # "9.2"
+	suffix="${path#*-}" # "jre7"
 
 	baseImage='java'
 	case "$suffix" in
@@ -27,15 +27,15 @@ for version in "${versions[@]}"; do
 
 	fullVersion=
 	for candidate in "${available[@]}"; do
-		# Pick the first $candidate to match ${plainVersion}.*
-		if [[ "$candidate" == "$plainVersion".* ]]; then
+		# Pick the first $candidate to match ${version}.*
+		if [[ "$candidate" == "$version".* ]]; then
 			fullVersion="$candidate"
 			break
 		fi
 	done
 
 	if [ -z "$fullVersion" ]; then
-		echo >&2 "Unable to find Jetty package for $version"
+		echo >&2 "Unable to find Jetty package for $path"
 		exit 1
 	fi
 
@@ -44,6 +44,6 @@ for version in "${versions[@]}"; do
 		sed -ri '
 			s/^(FROM) .*/\1 '"$baseImage"'/;
 			s/^(ENV JETTY_VERSION) .*/\1 '"$fullVersion"'/;
-		' "$version/Dockerfile"
+		' "$path/Dockerfile"
 	)
 done
