@@ -1,10 +1,11 @@
 #!/bin/bash
-set -e
+set -ueo pipefail
 
 declare -A aliases
 aliases=(
+	[9.2-jre7]='latest jre7'
+	[9.2-jre8]='jre8'
 )
-defaultVersion='9'
 defaultJava='7'
 defaultSuffix="jre${defaultJava}"
 
@@ -19,26 +20,36 @@ echo '# maintainer: Mike Dillon <mike@embody.org> (@md5)'
 for version in "${versions[@]}"; do
 	commit="$(git log -1 --format='format:%H' -- "$version")"
 
-	majorVersion="${version%%-*}"
 	suffix="${version#*-}" # "jre7"
 
 	fullVersion="$(grep -m1 'ENV JETTY_VERSION ' "$version/Dockerfile" | cut -d' ' -f3)"
 	fullVersion="${fullVersion%.v*}"
 	majorMinorVersion="${fullVersion%.*}"
+	majorVersion="${fullVersion%%.*}"
 
-	versionAliases=( $fullVersion-$suffix $majorMinorVersion-$suffix $majorVersion-$suffix ) # 8.0.14-jre7 8.0-jre7 8-jre7
-	if [ "$majorVersion" = "$defaultVersion" ]; then
-		versionAliases+=( $suffix ) # jre7
+	isMilestone=
+	if [[ "$fullVersion" == *.M* ]]; then
+		isMilestone=1
 	fi
 
+	versionAliases=()
+
 	if [ "$suffix" = "$defaultSuffix" ]; then
-		versionAliases+=( $fullVersion $majorMinorVersion $majorVersion ) # 8.0.14 8.0 8
-		if [ "$majorVersion" = "$defaultVersion" ]; then
-			versionAliases+=( latest )
+		versionAliases+=( $fullVersion ) # 9.2.10
+
+		if ! [ "$isMilestone" ]; then
+			versionAliases+=( $majorMinorVersion $majorVersion ) # 9.2 9
 		fi
 	fi
 
-	versionAliases+=( ${aliases[$version]} )
+	versionAliases+=( $fullVersion-$suffix ) # 9.2.10-jre7
+	if ! [ "$isMilestone" ]; then
+		versionAliases+=( $majorMinorVersion-$suffix $majorVersion-$suffix ) # 9.2-jre7 9-jre7
+	fi
+
+	if [ ${#aliases[$version]} -gt 0 ]; then
+		versionAliases+=( ${aliases[$version]} )
+	fi
 
 	echo
 	for va in "${versionAliases[@]}"; do
