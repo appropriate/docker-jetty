@@ -16,9 +16,10 @@ paths=( "${paths[@]%/}" )
 url='git://github.com/md5/docker-jetty'
 
 echo '# maintainer: Mike Dillon <mike@embody.org> (@md5)'
-echo
 
 for path in "${paths[@]}"; do
+	echo
+
 	commit="$(git log -1 --format='format:%H' -- "$path")"
 
 	suffix="${path#*-}" # "jre7"
@@ -58,6 +59,4 @@ for path in "${paths[@]}"; do
 			echo "$va: ${url}@${commit} $path"
 		done
 	fi
-
-	echo
 done
