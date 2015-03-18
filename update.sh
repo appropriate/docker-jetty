@@ -15,7 +15,7 @@ MAVEN_METADATA_URL='https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distr
 available=( $( curl -sSL "$MAVEN_METADATA_URL" | grep -Eo '<(version)>[^<]*</\1>' | awk -F'[<>]' '{ print $3 }' | sort -Vr ) )
 
 for version in "${versions[@]}"; do
-	plainVersion="${version%%-*}" # "6"
+	plainVersion="${version%%-*}" # "9.2"
 	suffix="${version#*-}" # "jre7"
 
 	baseImage='java'
