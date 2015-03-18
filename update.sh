@@ -27,7 +27,7 @@ for version in "${versions[@]}"; do
 
 	fullVersion=
 	for candidate in "${available[@]}"; do
-		# Pick the first $candidate to match $majorVersion.*
+		# Pick the first $candidate to match ${plainVersion}.*
 		if [[ "$candidate" == "$plainVersion".* ]]; then
 			fullVersion="$candidate"
 			break
