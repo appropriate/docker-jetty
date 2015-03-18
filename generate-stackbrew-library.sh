@@ -51,7 +51,7 @@ for path in "${paths[@]}"; do
 		echo "$va-$suffix: ${url}@${commit} $path"
 	done
 
-	# Output custom alises
+	# Output custom aliases
 	# e.g. latest, jre7, jre8
 	if [ ${#aliases[$path]} -gt 0 ]; then
 		for va in ${aliases[$path]}; do
