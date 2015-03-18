@@ -12,26 +12,7 @@ versions=( "${versions[@]%/}" )
 
 MAVEN_METADATA_URL='https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/maven-metadata.xml'
 
-latest=
-release=
-available=()
-for line in $( curl -sSL "$MAVEN_METADATA_URL" | grep -Eo '<(latest|release|version)>[^<]*</\1>' | awk -F'[<>]' '{ print $2 "=" $3 }' | sort -Vr ); do
-	IFS='='
-	read type version <<< "$line"
-	unset IFS
-
-	case "$type" in
-		latest)
-			latest="$version"
-			;;
-		release)
-			release="$version"
-			;;
-		version)
-			available+=("$version")
-			;;
-	esac
-done
+available=( $( curl -sSL "$MAVEN_METADATA_URL" | grep -Eo '<(version)>[^<]*</\1>' | awk -F'[<>]' '{ print $3 }' | sort -Vr ) )
 
 for version in "${versions[@]}"; do
 	plainVersion="${version%%-*}" # "6"
