@@ -13,7 +13,7 @@ cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
 paths=( */ )
 paths=( "${paths[@]%/}" )
-url='git://github.com/md5/docker-jetty'
+url='git://github.com/appropriate/docker-jetty'
 
 echo '# maintainer: Mike Dillon <mike@embody.org> (@md5)'
 
