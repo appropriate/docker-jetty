@@ -9,8 +9,12 @@ RUN mkdir -p "$JETTY_HOME"
 WORKDIR $JETTY_HOME
 
 # see http://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html
-RUN gpg --keyserver pool.sks-keyservers.net --recv-keys \
-        5DE533CB43DAF8BC3E372283E7AE839CD7C58886
+ENV JETTY_GPG_KEYS 5DE533CB43DAF8BC3E372283E7AE839CD7C58886
+
+RUN set -xe \
+	&& for key in $JETTY_GPG_KEYS; do \
+		gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
+	done
 
 ENV JETTY_VERSION 9.2.10.v20150310
 ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
