@@ -18,5 +18,5 @@ before_script:
   - image="jetty:$VERSION-$VARIANT"
 
 script:
-  - docker build -t "$image" .
+  - docker build --pull -t "$image" .
   - ~/official-images/test/run.sh "$image"
