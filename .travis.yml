@@ -1,0 +1,22 @@
+---
+language: bash
+
+dist: trusty
+
+env:
+  - VERSION=9.2 VARIANT=jre7
+  - VERSION=9.2 VARIANT=jre8
+  - VERSION=9.3 VARIANT=jre7
+  - VERSION=9.3 VARIANT=jre8
+
+install:
+  - git clone https://github.com/docker-library/official-images.git ~/official-images
+
+before_script:
+  - env | sort
+  - cd "$VERSION-$VARIANT"
+  - image="jetty:$VERSION-$VARIANT"
+
+script:
+  - docker build --pull -t "$image" .
+  - ~/official-images/test/run.sh "$image"
