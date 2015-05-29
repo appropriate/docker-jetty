@@ -6,7 +6,6 @@ dist: trusty
 env:
   - VERSION=9.2 VARIANT=jre7
   - VERSION=9.2 VARIANT=jre8
-  - VERSION=9.3 VARIANT=jre7
   - VERSION=9.3 VARIANT=jre8
 
 install:
