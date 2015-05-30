@@ -23,26 +23,30 @@ RUN set -xe \
 ENV JETTY_VERSION 9.2.11.v20150529
 ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
 
-RUN curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
-    && curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
-    && gpg --verify jetty.tar.gz.asc \
-    && tar -xvf jetty.tar.gz --strip-components=1 \
-    && sed -i '/jetty-logging/d' etc/jetty.conf \
-    && rm -fr demo-base javadoc \
-    && rm jetty.tar.gz*
+RUN set -xe \
+	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
+	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
+	&& gpg --verify jetty.tar.gz.asc \
+	&& tar -xvf jetty.tar.gz --strip-components=1 \
+	&& sed -i '/jetty-logging/d' etc/jetty.conf \
+	&& rm -fr demo-base javadoc \
+	&& rm jetty.tar.gz*
 
 ENV JETTY_BASE /var/lib/jetty
 RUN mkdir -p "$JETTY_BASE" && chown jetty:jetty "$JETTY_BASE"
 WORKDIR $JETTY_BASE
 
 # Get the list of modules in the default start.ini and build new base with those modules, then add setuid
-RUN java -jar "$JETTY_HOME/start.jar" --add-to-startd="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
-    && java -jar "$JETTY_HOME/start.jar" --add-to-startd=setuid
+RUN modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
+	&& set -xe \
+	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid"
 
 ENV JETTY_RUN /run/jetty
 ENV JETTY_STATE $JETTY_RUN/jetty.state
 ENV TMPDIR /tmp/jetty
-RUN mkdir -p "$JETTY_RUN" "$TMPDIR" && chown -R jetty:jetty "$JETTY_RUN" "$TMPDIR"
+RUN set -xe \
+	&& mkdir -p "$JETTY_RUN" "$TMPDIR" \
+	&& chown -R jetty:jetty "$JETTY_RUN" "$TMPDIR"
 
 EXPOSE 8080
 CMD ["jetty.sh", "run"]
