@@ -4,7 +4,6 @@ FROM java:8-jre
 RUN groupadd -r jetty && useradd -r -g jetty jetty
 
 ENV JETTY_HOME /usr/local/jetty
-ENV PATH $JETTY_HOME/bin:$PATH
 RUN mkdir -p "$JETTY_HOME"
 WORKDIR $JETTY_HOME
 
@@ -49,4 +48,5 @@ RUN set -xe \
 	&& chown -R jetty:jetty "$JETTY_RUN" "$TMPDIR"
 
 EXPOSE 8080
-CMD ["jetty.sh", "run"]
+CMD []
+ENTRYPOINT ["java","-Djava.io.tmpdir=/tmp/jetty","-jar","/usr/local/jetty/start.jar"]
