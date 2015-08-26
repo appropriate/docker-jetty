@@ -27,7 +27,6 @@ RUN set -xe \
 	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
 	&& gpg --verify jetty.tar.gz.asc \
 	&& tar -xvf jetty.tar.gz --strip-components=1 \
-	&& sed -i '/jetty-logging/d' etc/jetty.conf \
 	&& rm -fr demo-base javadoc \
 	&& rm jetty.tar.gz*
 
