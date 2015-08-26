@@ -48,5 +48,8 @@ RUN set -xe \
 	&& mkdir -p "$JETTY_RUN" "$TMPDIR" \
 	&& chown -R jetty:jetty "$JETTY_RUN" "$TMPDIR"
 
+COPY docker-entrypoint.bash /
+
 EXPOSE 8080
-CMD ["jetty.sh", "run"]
+ENTRYPOINT ["/docker-entrypoint.bash"]
+CMD ["java","-Djava.io.tmpdir=/tmp/jetty","-jar","/usr/local/jetty/start.jar"]

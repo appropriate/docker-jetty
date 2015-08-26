@@ -41,6 +41,7 @@ for path in "${paths[@]}"; do
 
 	(
 		set -x
+		cp docker-entrypoint.bash "$path/"
 		sed -ri '
 			s/^(FROM) .*/\1 '"$baseImage"'/;
 			s/^(ENV JETTY_VERSION) .*/\1 '"$fullVersion"'/;
