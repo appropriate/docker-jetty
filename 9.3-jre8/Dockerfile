@@ -3,9 +3,12 @@ FROM java:8-jre
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN groupadd -r jetty && useradd -r -g jetty jetty
 
+ENV JETTY_VERSION 9.3.2.v20150730
 ENV JETTY_HOME /usr/local/jetty
-ENV PATH $JETTY_HOME/bin:$PATH
-RUN mkdir -p "$JETTY_HOME"
+ENV JETTY_BASE /var/lib/jetty
+ENV TMPDIR /tmp/jetty
+RUN mkdir -p "$JETTY_HOME" "$JETTY_BASE" "$TMPDIR"
+
 WORKDIR $JETTY_HOME
 
 # see http://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html
@@ -20,33 +23,24 @@ RUN set -xe \
 		gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
 	done
 
-ENV JETTY_VERSION 9.3.2.v20150730
 ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
-
 RUN set -xe \
 	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
 	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
 	&& gpg --verify jetty.tar.gz.asc \
 	&& tar -xvf jetty.tar.gz --strip-components=1 \
-	&& sed -i '/jetty-logging/d' etc/jetty.conf \
 	&& rm -fr demo-base javadoc \
 	&& rm jetty.tar.gz*
 
-ENV JETTY_BASE /var/lib/jetty
-RUN mkdir -p "$JETTY_BASE" && chown jetty:jetty "$JETTY_BASE"
-WORKDIR $JETTY_BASE
+ADD docker-entrypoint.bash "$JETTY_BASE/docker-entrypoint.bash"
 
-# Get the list of modules in the default start.ini and build new base with those modules, then add setuid
+WORKDIR $JETTY_BASE
+# Get the list of modules in the default start.ini and build new base with those modules, then add setuid, chown etc.
 RUN modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
 	&& set -xe \
-	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid"
-
-ENV JETTY_RUN /run/jetty
-ENV JETTY_STATE $JETTY_RUN/jetty.state
-ENV TMPDIR /tmp/jetty
-RUN set -xe \
-	&& mkdir -p "$JETTY_RUN" "$TMPDIR" \
-	&& chown -R jetty:jetty "$JETTY_RUN" "$TMPDIR"
+	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid" \
+	&& chown -R jetty:jetty "$JETTY_HOME" "$JETTY_BASE" "$TMPDIR" \
+	&& chmod +x "$JETTY_BASE/docker-entrypoint.bash"
 
 EXPOSE 8080
-CMD ["jetty.sh", "run"]
+ENTRYPOINT ["/var/lib/jetty/docker-entrypoint.bash"];
