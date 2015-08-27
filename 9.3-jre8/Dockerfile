@@ -33,7 +33,7 @@ RUN set -xe \
 	&& rm jetty.tar.gz*
 
 ENV JETTY_BASE /var/lib/jetty
-RUN mkdir -p "$JETTY_BASE" && chown jetty:jetty "$JETTY_BASE"
+RUN mkdir -p "$JETTY_BASE"
 WORKDIR $JETTY_BASE
 
 # Get the list of modules in the default start.ini and build new base with those modules, then add setuid
@@ -46,7 +46,7 @@ ENV JETTY_STATE $JETTY_RUN/jetty.state
 ENV TMPDIR /tmp/jetty
 RUN set -xe \
 	&& mkdir -p "$JETTY_RUN" "$TMPDIR" \
-	&& chown -R jetty:jetty "$JETTY_RUN" "$TMPDIR"
+	&& chown -R jetty:jetty "$JETTY_RUN" "$TMPDIR" "$JETTY_BASE"
 
 COPY docker-entrypoint.bash /
 
