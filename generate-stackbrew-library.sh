@@ -16,6 +16,7 @@ paths=( $( printf '%s\n' "${paths[@]%/Dockerfile}" | sort -Vr ) )
 url='git://github.com/appropriate/docker-jetty'
 
 echo '# maintainer: Mike Dillon <mike@appropriate.io> (@md5)'
+echo '# maintainer: Greg Wilkins <gregw@webtide.com> (@gregw)'
 
 declare -A tagsSeen
 tagsSeen=()
