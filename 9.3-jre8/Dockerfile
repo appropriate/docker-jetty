@@ -20,7 +20,7 @@ RUN set -xe \
 		gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
 	done
 
-ENV JETTY_VERSION 9.3.2.v20150730
+ENV JETTY_VERSION 9.3.3.v20150827
 ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
 
 RUN set -xe \
