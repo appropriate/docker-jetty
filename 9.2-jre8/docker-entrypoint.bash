@@ -14,7 +14,7 @@ if [ "$1" = jetty.sh ]; then
 	EOWARN
 fi
 
-if ! type "$1" &>/dev/null; then
+if ! type -- "$1" &>/dev/null; then
 	set -- java -jar "-Djava.io.tmpdir=$TMPDIR" "$JETTY_HOME/start.jar" "$@"
 fi
 
