@@ -1,8 +1,16 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 
 if [ "$1" = jetty.sh ]; then
+	if ! command -v bash >/dev/null 2>&1 ; then
+		cat >&2 <<- 'EOWARN'
+			********************************************************************
+			ERROR: bash not found. Use of jetty.sh requires bash.
+			********************************************************************
+		EOWARN
+		exit 1
+	fi
 	cat >&2 <<- 'EOWARN'
 		********************************************************************
 		WARNING: Use of jetty.sh from this image is deprecated and may
@@ -14,7 +22,7 @@ if [ "$1" = jetty.sh ]; then
 	EOWARN
 fi
 
-if ! type -- "$1" &>/dev/null; then
+if ! command -v -- "$1" >/dev/null 2>&1 ; then
 	set -- java -jar "-Djava.io.tmpdir=$TMPDIR" "$JETTY_HOME/start.jar" "$@"
 fi
 

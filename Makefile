@@ -1,4 +1,4 @@
-VERSIONS = $(foreach df,$(wildcard */Dockerfile),$(df:%/Dockerfile=%))
+VERSIONS = $(foreach df,$(wildcard */alpine/Dockerfile */Dockerfile),$(df:%/Dockerfile=%))
 
 all: build
 
@@ -6,7 +6,7 @@ build: $(VERSIONS)
 
 define jetty-version
 $1:
-	docker build -t jetty:$1 $1
+	docker build -t jetty:$(shell echo $1 | sed -e 's/\//-/g') $1
 endef
 $(foreach version,$(VERSIONS),$(eval $(call jetty-version,$(version))))
 
