@@ -16,4 +16,4 @@ update:
 library:
 	@docker run --rm -v $$(pwd):/work -w /work buildpack-deps ./generate-stackbrew-library.sh
 
-.PHONY: all build library $(VERSIONS)
+.PHONY: all build update library $(VERSIONS)
