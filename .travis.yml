@@ -4,17 +4,18 @@ language: bash
 dist: trusty
 
 env:
-  - VERSION=9.2 VARIANT=jre7
-  - VERSION=9.2 VARIANT=jre8
-  - VERSION=9.3 VARIANT=jre8
+  - VERSION=9.2-jre7
+  - VERSION=9.2-jre8
+  - VERSION=9.3-jre8
+  - VERSION=9.3-jre8 VARIANT=alpine
 
 install:
   - git clone https://github.com/docker-library/official-images.git ~/official-images
 
 before_script:
   - env | sort
-  - cd "$VERSION-$VARIANT"
-  - image="jetty:$VERSION-$VARIANT"
+  - cd "${VERSION}${VARIANT:+/$VARIANT}"
+  - image="jetty:${VERSION}${VARIANT:+-$VARIANT}"
 
 script:
   - docker build --pull -t "$image" .

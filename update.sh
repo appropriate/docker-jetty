@@ -39,12 +39,15 @@ for path in "${paths[@]}"; do
 		exit 1
 	fi
 
-	(
-		set -x
-		cp docker-entrypoint.bash "$path/"
-		sed -ri '
-			s/^(FROM) .*/\1 '"$baseImage"'/;
-			s/^(ENV JETTY_VERSION) .*/\1 '"$fullVersion"'/;
-		' "$path/Dockerfile"
-	)
+	for variant in alpine ''; do
+		[ -d "$path/$variant" ] || continue
+		(
+			set -x
+			cp docker-entrypoint.sh "$path/$variant"
+			sed -ri '
+				s/^(FROM) .*/\1 '"$baseImage${variant:+-$variant}"'/;
+				s/^(ENV JETTY_VERSION) .*/\1 '"$fullVersion"'/;
+			' "$path/$variant/Dockerfile"
+		)
+	done
 done

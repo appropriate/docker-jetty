@@ -35,45 +35,54 @@ outputTag() {
 }
 
 for path in "${paths[@]}"; do
-	echo
+	for variant in '' alpine; do
+		echo
 
-	commit="$(git log -1 --format='format:%H' -- "$path")"
+		[ -f "$path${variant:+/$variant}/Dockerfile" ] || continue
 
-	suffix="${path#*-}" # "jre7"
+		commit="$(git log -1 --format='format:%H' -- "$path${variant:+/$variant}")"
 
-	version="$(grep -m1 'ENV JETTY_VERSION ' "$path/Dockerfile" | cut -d' ' -f3)"
+		suffix="${path#*-}" # "jre7"
 
-	if [[ "$version" == *.v* ]]; then
-		# Release version
-		versionAliases=()
-		while [[ "$version" == *.* ]]; do
-			version="${version%.*}"
-			versionAliases+=("$version")
-		done
-	else
-		# Non-release version
-		versionAliases=("$version")
-	fi
+		version="$(grep -m1 'ENV JETTY_VERSION ' "$path${variant:+/$variant}/Dockerfile" | cut -d' ' -f3)"
 
-	# Output ${versionAliases[@]} without suffixes
-	# e.g. 9.2.10, 9.2, 9
-	if [ "$suffix" = "$defaultSuffix" ]; then
+		if [[ "$version" == *.v* ]]; then
+			# Release version
+			versionAliases=()
+			while [[ "$version" == *.* ]]; do
+				version="${version%.*}"
+				versionAliases+=("$version")
+			done
+		else
+			# Non-release version
+			versionAliases=("$version")
+		fi
+
+		# Output ${versionAliases[@]} without suffixes
+		# e.g. 9.2.10, 9.2, 9, 9.3-alpine
+		if [ "$suffix" = "$defaultSuffix" ]; then
+			for va in "${versionAliases[@]}"; do
+				outputTag "$va${variant:+-$variant}" "$url" "$commit" "$path${variant:+/$variant}"
+			done
+		fi
+
+		# Output ${versionAliases[@]} with suffixes
+		# e.g. 9.2.10-jre7, 9.2-jre7, 9-jre7, 9-jre8-alpine
 		for va in "${versionAliases[@]}"; do
-			outputTag "$va" "$url" "$commit" "$path"
+			outputTag "$va-$suffix${variant:+-$variant}" "$url" "$commit" "$path${variant:+/$variant}"
 		done
-	fi
 
-	# Output ${versionAliases[@]} with suffixes
-	# e.g. 9.2.10-jre7, 9.2-jre7, 9-jre7
-	for va in "${versionAliases[@]}"; do
-		outputTag "$va-$suffix" "$url" "$commit" "$path"
+		# Output custom aliases
+		# e.g. latest, jre7, jre8, latest-alpine
+		if [ ${#aliases[$path]} -gt 0 ]; then
+			for va in ${aliases[$path]}; do
+				if [ ! -z "$variant" -a "$va" = 'latest' ]; then
+					va="$variant"
+				else
+					va="$va${variant:+-$variant}"
+				fi
+				outputTag "$va" "$url" "$commit" "$path${variant:+/$variant}"
+			done
+		fi
 	done
-
-	# Output custom aliases
-	# e.g. latest, jre7, jre8
-	if [ ${#aliases[$path]} -gt 0 ]; then
-		for va in ${aliases[$path]}; do
-			outputTag "$va" "$url" "$commit" "$path"
-		done
-	fi
 done
