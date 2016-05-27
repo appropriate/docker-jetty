@@ -36,9 +36,9 @@ outputTag() {
 
 for path in "${paths[@]}"; do
 	for variant in '' alpine; do
-		echo
-
 		[ -f "$path${variant:+/$variant}/Dockerfile" ] || continue
+
+		echo
 
 		commit="$(git log -1 --format='format:%H' -- "$path${variant:+/$variant}")"
 
