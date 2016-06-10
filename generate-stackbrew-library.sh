@@ -66,7 +66,7 @@ for path in "${paths[@]}"; do
 		versionAliases=("$version")
 	fi
 
-	# Output ${versionAliases[@]} without jdk
+	# Output ${versionAliases[@]} without JDK
 	# e.g. 9.2.10, 9.2, 9, 9.3-alpine
 	if [ "$jdk" = "$defaultJdk" ]; then
 		for va in "${versionAliases[@]}"; do
@@ -74,14 +74,14 @@ for path in "${paths[@]}"; do
 		done
 	fi
 
-	# Output ${versionAliases[@]} with suffixes
+	# Output ${versionAliases[@]} with JDK suffixes
 	# e.g. 9.2.10-jre7, 9.2-jre7, 9-jre7, 9-jre8-alpine
 	for va in "${versionAliases[@]}"; do
 		addTag "$va-$jdk${variant:+-$variant}"
 	done
 
 	# Output custom aliases
-	# e.g. latest, jre7, jre8, latest-alpine
+	# e.g. latest, jre7, jre8, alpine
 	if [ ${#aliases[$path]} -gt 0 ]; then
 		for va in ${aliases[$path]}; do
 			if [ ! -z "$variant" -a "$va" = 'latest' ]; then
