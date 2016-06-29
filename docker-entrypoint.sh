@@ -23,7 +23,7 @@ if [ "$1" = jetty.sh ]; then
 fi
 
 if ! command -v -- "$1" >/dev/null 2>&1 ; then
-	set -- java -jar "-Djava.io.tmpdir=$TMPDIR" "$JETTY_HOME/start.jar" "$@"
+	set -- java "-Djava.io.tmpdir=$TMPDIR" -jar "$JETTY_HOME/start.jar" "$@"
 fi
 
 exec "$@"
