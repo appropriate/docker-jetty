@@ -12,7 +12,7 @@ paths=( "${paths[@]%/}" )
 
 MAVEN_METADATA_URL='https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/maven-metadata.xml'
 
-available=( $( curl -sSL "$MAVEN_METADATA_URL" | grep -Eo '<(version)>[^<]*</\1>' | awk -F'[<>]' '$3 !~ "\.RC" { print $3 }' | sort -Vr ) )
+available=( $( curl -sSL "$MAVEN_METADATA_URL" | grep -Eo '<(version)>[^<]*</\1>' | awk -F'[<>]' '{ print $3 }' | sort -Vr ) )
 
 for path in "${paths[@]}"; do
 	version="${path%%-*}" # "9.2"
@@ -25,14 +25,29 @@ for path in "${paths[@]}"; do
 			;;
 	esac
 
-	fullVersion=
+	milestones=()
+	releaseCandidates=()
+	fullReleases=()
 	for candidate in "${available[@]}"; do
-		# Pick the first $candidate to match ${version}.*
 		if [[ "$candidate" == "$version".* ]]; then
-			fullVersion="$candidate"
-			break
+			if [[ "$candidate" == *.M* ]]; then
+				milestones+=("$candidate")
+			elif [[ "$candidate" == *.RC* ]]; then
+				releaseCandidates+=("$candidate")
+			elif [[ "$candidate" == *.v* ]]; then
+				fullReleases+=("$candidate")
+			fi
 		fi
 	done
+
+	fullVersion=
+	if [ -n "${fullReleases-}" ]; then
+		fullVersion="$fullReleases"
+	elif [ -n "${releaseCandidates-}" ]; then
+		fullVersion="$releaseCandidates"
+	elif [ -n "${milestones-}" ]; then
+		fullVersion="$milestones"
+	fi
 
 	if [ -z "$fullVersion" ]; then
 		echo >&2 "Unable to find Jetty package for $path"
