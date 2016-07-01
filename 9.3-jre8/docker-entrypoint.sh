@@ -33,8 +33,8 @@ if [ -n "$TMPDIR" ] ; then
 	esac
 fi
 
-if [ "$1" = "java" ] ; then
-        shift
+if [ "$1" = "java" -a -n "$JAVA_OPTIONS" ] ; then
+	shift
 	set -- java $JAVA_OPTIONS "$@"
 fi
 

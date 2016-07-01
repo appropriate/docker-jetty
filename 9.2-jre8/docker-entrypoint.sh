@@ -34,7 +34,7 @@ if [ -n "$TMPDIR" ] ; then
 fi
 
 if [ "$1" = "java" -a -n "$JAVA_OPTIONS" ] ; then
-        shift
+	shift
 	set -- java $JAVA_OPTIONS "$@"
 fi
 
