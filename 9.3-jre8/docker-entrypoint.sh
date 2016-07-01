@@ -23,7 +23,19 @@ if [ "$1" = jetty.sh ]; then
 fi
 
 if ! command -v -- "$1" >/dev/null 2>&1 ; then
-	set -- java "-Djava.io.tmpdir=$TMPDIR" -jar "$JETTY_HOME/start.jar" "$@"
+	set -- java -jar "$JETTY_HOME/start.jar" "$@"
+fi
+
+if [ -n "$TMPDIR" ] ; then
+	case "$JAVA_OPTIONS" in
+		*-Djava.io.tmpdir=*) ;;
+		*) JAVA_OPTIONS="-Djava.io.tmpdir=$TMPDIR $JAVA_OPTIONS" ;;
+	esac
+fi
+
+if [ "$1" = "java" ] ; then
+        shift
+	set -- java $JAVA_OPTIONS "$@"
 fi
 
 exec "$@"
