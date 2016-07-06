@@ -50,4 +50,4 @@ COPY docker-entrypoint.sh /
 
 EXPOSE 8080
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["java","-Djava.io.tmpdir=/tmp/jetty","-jar","/usr/local/jetty/start.jar"]
+CMD ["java","-jar","/usr/local/jetty/start.jar"]
