@@ -39,12 +39,10 @@ RUN modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste 
 	&& set -xe \
 	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid"
 
-ENV JETTY_RUN /run/jetty
-ENV JETTY_STATE $JETTY_RUN/jetty.state
 ENV TMPDIR /tmp/jetty
 RUN set -xe \
-	&& mkdir -p "$JETTY_RUN" "$TMPDIR" \
-	&& chown -R jetty:jetty "$JETTY_RUN" "$TMPDIR" "$JETTY_BASE"
+	&& mkdir -p "$TMPDIR" \
+	&& chown -R jetty:jetty "$TMPDIR" "$JETTY_BASE"
 
 COPY docker-entrypoint.sh /
 
