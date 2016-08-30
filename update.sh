@@ -18,7 +18,7 @@ for path in "${paths[@]}"; do
 	version="${path%%-*}" # "9.2"
 	suffix="${path#*-}" # "jre7"
 
-	baseImage='java'
+	baseImage='openjdk'
 	case "$suffix" in
 		jre*|jdk*)
 			baseImage+=":${suffix:3}-${suffix:0:3}" # ":7-jre"
