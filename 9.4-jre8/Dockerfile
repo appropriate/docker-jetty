@@ -9,7 +9,7 @@ RUN mkdir -p "$JETTY_HOME"
 WORKDIR $JETTY_HOME
 
 ENV JETTY_VERSION 9.4.0.v20161208
-ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
+ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-home/$JETTY_VERSION/jetty-home-$JETTY_VERSION.tar.gz
 
 # GPG Keys are personal keys of Jetty committers (see https://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html)
 ENV JETTY_GPG_KEYS \
@@ -27,7 +27,6 @@ RUN set -xe \
 	&& rm -r "$GNUPGHOME" \
 	&& tar -xvf jetty.tar.gz --strip-components=1 \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
-	&& rm -fr demo-base javadoc \
 	&& rm jetty.tar.gz*
 
 ENV JETTY_BASE /var/lib/jetty
