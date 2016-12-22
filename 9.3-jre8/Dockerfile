@@ -15,8 +15,9 @@ ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distrib
 ENV JETTY_GPG_KEYS \
 	# 1024D/8FB67BAC 2006-12-10 Joakim Erdfelt <joakime@apache.org>
 	B59B67FD7904984367F931800818D9D68FB67BAC \
-	# 1024D/D7C58886 2010-03-09 Jesse McConnell (signing key) <jesse.mcconnell@gmail.com>
-	5DE533CB43DAF8BC3E372283E7AE839CD7C58886
+	# 4096R/438A3B7D 2016-08-15 Jesse McConnell (signing key) <jesse.mcconnell@gmail.com>
+	2A684B57436A81FA8706B53C61C3351A438A3B7D
+
 RUN set -xe \
 	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
 	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
