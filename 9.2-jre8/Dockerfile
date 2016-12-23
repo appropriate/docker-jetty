@@ -11,12 +11,20 @@ WORKDIR $JETTY_HOME
 ENV JETTY_VERSION 9.2.20.v20161216
 ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
 
-# GPG Keys are personal keys of Jetty committers (see https://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html)
+# GPG Keys are personal keys of Jetty committers (see https://github.com/eclipse/jetty.project/blob/0607c0e66e44b9c12a62b85551da3a0edce0281e/KEYS.txt)
 ENV JETTY_GPG_KEYS \
-	# 1024D/8FB67BAC 2006-12-10 Joakim Erdfelt <joakime@apache.org>
+	# Jan Bartel      <janb@mortbay.com>
+	AED5EE6C45D0FE8D5D1B164F27DED4BF6216DB8F \
+	# Jesse McConnell <jesse.mcconnell@gmail.com>
+	2A684B57436A81FA8706B53C61C3351A438A3B7D \
+	# Joakim Erdfelt  <joakim.erdfelt@gmail.com>
+	5989BAF76217B843D66BE55B2D0E1FB8FE4B68B4 \
+	# Joakim Erdfelt  <joakim@apache.org>
 	B59B67FD7904984367F931800818D9D68FB67BAC \
-	# 4096R/438A3B7D 2016-08-15 Jesse McConnell (signing key) <jesse.mcconnell@gmail.com>
-	2A684B57436A81FA8706B53C61C3351A438A3B7D
+	# Joakim Erdfelt  <joakim@erdfelt.com>
+	BFBB21C246D7776836287A48A04E0C74ABB35FEA \
+	# Simone Bordet   <simone.bordet@gmail.com>
+	8B096546B1A8F02656B15D3B1677D141BCF3584D
 
 RUN set -xe \
 	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
