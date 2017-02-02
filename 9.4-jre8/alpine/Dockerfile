@@ -37,11 +37,8 @@ RUN set -xe \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
 	&& rm jetty.tar.gz* \
 	&& rm -fr jetty-home-$JETTY_VERSION/ \
-
-	# Get the list of modules in the default start.ini and build new base with those modules, then add setuid
 	&& cd $JETTY_BASE \
-	&& modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
-	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid" \
+	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket,setuid" \
 
 	# Remove installed packages and various cleanup
 	&& apk del .build-deps \

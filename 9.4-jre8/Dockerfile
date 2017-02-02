@@ -33,10 +33,8 @@ ENV JETTY_BASE /var/lib/jetty
 RUN mkdir -p "$JETTY_BASE"
 WORKDIR $JETTY_BASE
 
-# Get the list of modules in the default start.ini and build new base with those modules, then add setuid
-RUN modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
-	&& set -xe \
-	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid"
+RUN set -xe \
+	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket,setuid"
 
 ENV TMPDIR /tmp/jetty
 RUN set -xe \
