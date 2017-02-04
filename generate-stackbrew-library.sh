@@ -5,7 +5,7 @@ shopt -s globstar
 declare -A aliases
 aliases=(
 	[9.2-jre7]='jre7'
-	[9.3-jre8]='latest jre8'
+	[9.4-jre8]='latest jre8'
 )
 defaultJdk="jre8"
 
