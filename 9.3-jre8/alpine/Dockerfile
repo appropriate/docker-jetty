@@ -31,7 +31,7 @@ ENV JETTY_GPG_KEYS \
 
 RUN set -xe \
 	# Install required packages for build time. Will be removed when build finishes.
-	&& apk add --no-cache --virtual .build-deps gnupg coreutils curl \
+	&& apk add --no-cache --virtual .build-deps gnupg coreutils curl attr \
 
 	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
 	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
@@ -46,6 +46,7 @@ RUN set -xe \
 	&& rm -fr demo-base javadoc \
 	&& rm jetty.tar.gz* \
 	&& rm -fr jetty-distribution-$JETTY_VERSION/ \
+	&& setfattr -n user.pax.flags -v "em" /usr/lib/jvm/java-1.8-openjdk/jre/bin/java \
 
 	# Get the list of modules in the default start.ini and build new base with those modules, then add setuid
 	&& cd $JETTY_BASE \
