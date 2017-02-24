@@ -11,7 +11,7 @@ WORKDIR $JETTY_HOME
 ENV JETTY_BASE /var/lib/jetty
 RUN mkdir -p "$JETTY_BASE"
 
-ENV JETTY_VERSION 9.4.1.v20170120
+ENV JETTY_VERSION 9.4.2.v20170220
 ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-home/$JETTY_VERSION/jetty-home-$JETTY_VERSION.tar.gz
 
 # GPG Keys are personal keys of Jetty committers (see https://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html)
