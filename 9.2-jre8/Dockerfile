@@ -37,7 +37,8 @@ RUN set -xe \
 	&& tar -xvf jetty.tar.gz --strip-components=1 \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
 	&& rm -fr demo-base javadoc \
-	&& rm jetty.tar.gz*
+	&& rm jetty.tar.gz* \
+	&& rm -rf /tmp/hsperfdata_root
 
 ENV JETTY_BASE /var/lib/jetty
 RUN mkdir -p "$JETTY_BASE"
@@ -46,12 +47,14 @@ WORKDIR $JETTY_BASE
 # Get the list of modules in the default start.ini and build new base with those modules, then add setuid
 RUN modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
 	&& set -xe \
-	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid"
+	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid" \
+	&& chown -R jetty:jetty "$JETTY_BASE" \
+	&& rm -rf /tmp/hsperfdata_root
 
 ENV TMPDIR /tmp/jetty
 RUN set -xe \
 	&& mkdir -p "$TMPDIR" \
-	&& chown -R jetty:jetty "$TMPDIR" "$JETTY_BASE"
+	&& chown -R jetty:jetty "$TMPDIR"
 
 COPY docker-entrypoint.sh /
 

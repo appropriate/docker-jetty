@@ -8,9 +8,6 @@ ENV PATH $JETTY_HOME/bin:$PATH
 RUN mkdir -p "$JETTY_HOME"
 WORKDIR $JETTY_HOME
 
-ENV JETTY_BASE /var/lib/jetty
-RUN mkdir -p "$JETTY_BASE"
-
 ENV JETTY_VERSION 9.4.2.v20170220
 ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-home/$JETTY_VERSION/jetty-home-$JETTY_VERSION.tar.gz
 
@@ -31,7 +28,7 @@ ENV JETTY_GPG_KEYS \
 
 RUN set -xe \
 	# Install required packages for build time. Will be removed when build finishes.
-	&& apk add --no-cache --virtual .build-deps gnupg coreutils curl \
+	&& apk add --no-cache --virtual .build-deps gnupg curl \
 
 	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
 	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
@@ -45,20 +42,25 @@ RUN set -xe \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
 	&& rm jetty.tar.gz* \
 	&& rm -fr jetty-home-$JETTY_VERSION/ \
-	&& cd $JETTY_BASE \
-	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket,setuid" \
 
 	# Remove installed packages and various cleanup
 	&& apk del .build-deps \
 	&& rm -fr .build-deps \
 	&& rm -rf /tmp/hsperfdata_root
 
+ENV JETTY_BASE /var/lib/jetty
+RUN mkdir -p "$JETTY_BASE"
 WORKDIR $JETTY_BASE
+
+RUN set -xe \
+	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket,setuid" \
+	&& chown -R jetty:jetty "$JETTY_BASE" \
+	&& rm -rf /tmp/hsperfdata_root
 
 ENV TMPDIR /tmp/jetty
 RUN set -xe \
 	&& mkdir -p "$TMPDIR" \
-	&& chown -R jetty:jetty "$TMPDIR" "$JETTY_BASE"
+	&& chown -R jetty:jetty "$TMPDIR"
 
 COPY docker-entrypoint.sh /
 

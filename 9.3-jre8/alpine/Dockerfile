@@ -8,9 +8,6 @@ ENV PATH $JETTY_HOME/bin:$PATH
 RUN mkdir -p "$JETTY_HOME"
 WORKDIR $JETTY_HOME
 
-ENV JETTY_BASE /var/lib/jetty
-RUN mkdir -p "$JETTY_BASE"
-
 ENV JETTY_VERSION 9.3.16.v20170120
 ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
 
@@ -31,7 +28,7 @@ ENV JETTY_GPG_KEYS \
 
 RUN set -xe \
 	# Install required packages for build time. Will be removed when build finishes.
-	&& apk add --no-cache --virtual .build-deps gnupg coreutils curl \
+	&& apk add --no-cache --virtual .build-deps gnupg curl \
 
 	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
 	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
@@ -47,22 +44,29 @@ RUN set -xe \
 	&& rm jetty.tar.gz* \
 	&& rm -fr jetty-distribution-$JETTY_VERSION/ \
 
-	# Get the list of modules in the default start.ini and build new base with those modules, then add setuid
-	&& cd $JETTY_BASE \
-	&& modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
-	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid" \
-
 	# Remove installed packages and various cleanup
 	&& apk del .build-deps \
 	&& rm -fr .build-deps \
 	&& rm -rf /tmp/hsperfdata_root
 
+ENV JETTY_BASE /var/lib/jetty
+RUN mkdir -p "$JETTY_BASE"
 WORKDIR $JETTY_BASE
+
+# Get the list of modules in the default start.ini and build new base with those modules, then add setuid
+RUN set -xe \
+	&& apk add --no-cache --virtual .build-deps coreutils \
+	&& modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
+	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid" \
+	&& chown -R jetty:jetty "$JETTY_BASE" \
+	&& apk del .build-deps \
+	&& rm -fr .build-deps \
+	&& rm -rf /tmp/hsperfdata_root
 
 ENV TMPDIR /tmp/jetty
 RUN set -xe \
 	&& mkdir -p "$TMPDIR" \
-	&& chown -R jetty:jetty "$TMPDIR" "$JETTY_BASE"
+	&& chown -R jetty:jetty "$TMPDIR"
 
 COPY docker-entrypoint.sh /
 

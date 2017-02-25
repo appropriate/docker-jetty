@@ -36,19 +36,22 @@ RUN set -xe \
 	&& rm -r "$GNUPGHOME" \
 	&& tar -xvf jetty.tar.gz --strip-components=1 \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
-	&& rm jetty.tar.gz*
+	&& rm jetty.tar.gz* \
+	&& rm -rf /tmp/hsperfdata_root
 
 ENV JETTY_BASE /var/lib/jetty
 RUN mkdir -p "$JETTY_BASE"
 WORKDIR $JETTY_BASE
 
 RUN set -xe \
-	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket,setuid"
+	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket,setuid" \
+	&& chown -R jetty:jetty "$JETTY_BASE" \
+	&& rm -rf /tmp/hsperfdata_root
 
 ENV TMPDIR /tmp/jetty
 RUN set -xe \
 	&& mkdir -p "$TMPDIR" \
-	&& chown -R jetty:jetty "$TMPDIR" "$JETTY_BASE"
+	&& chown -R jetty:jetty "$TMPDIR"
 
 COPY docker-entrypoint.sh /
 
