@@ -8,7 +8,7 @@ ENV PATH $JETTY_HOME/bin:$PATH
 RUN mkdir -p "$JETTY_HOME"
 WORKDIR $JETTY_HOME
 
-ENV JETTY_VERSION 9.2.20.v20161216
+ENV JETTY_VERSION 9.2.21.v20170120
 ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
 
 # GPG Keys are personal keys of Jetty committers (see https://github.com/eclipse/jetty.project/blob/0607c0e66e44b9c12a62b85551da3a0edce0281e/KEYS.txt)
@@ -37,7 +37,8 @@ RUN set -xe \
 	&& tar -xvf jetty.tar.gz --strip-components=1 \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
 	&& rm -fr demo-base javadoc \
-	&& rm jetty.tar.gz*
+	&& rm jetty.tar.gz* \
+	&& rm -rf /tmp/hsperfdata_root
 
 ENV JETTY_BASE /var/lib/jetty
 RUN mkdir -p "$JETTY_BASE"
@@ -46,12 +47,14 @@ WORKDIR $JETTY_BASE
 # Get the list of modules in the default start.ini and build new base with those modules, then add setuid
 RUN modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
 	&& set -xe \
-	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid"
+	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid" \
+	&& chown -R jetty:jetty "$JETTY_BASE" \
+	&& rm -rf /tmp/hsperfdata_root
 
 ENV TMPDIR /tmp/jetty
 RUN set -xe \
 	&& mkdir -p "$TMPDIR" \
-	&& chown -R jetty:jetty "$TMPDIR" "$JETTY_BASE"
+	&& chown -R jetty:jetty "$TMPDIR"
 
 COPY docker-entrypoint.sh /
 
