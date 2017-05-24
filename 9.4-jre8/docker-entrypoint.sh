@@ -61,7 +61,7 @@ if expr "$*" : '^java .*/start\.jar.*$' >/dev/null ; then
 			--version |\
 			-v )\
 			# It is a terminating command, so exec directly
-		        exec "$@"
+			exec "$@"
 		esac
 	done
 
