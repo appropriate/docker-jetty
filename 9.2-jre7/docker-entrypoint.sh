@@ -38,4 +38,39 @@ if [ "$1" = "java" -a -n "$JAVA_OPTIONS" ] ; then
 	set -- java $JAVA_OPTIONS "$@"
 fi
 
+if expr "$*" : '^java .*/start\.jar.*$' >/dev/null ; then
+	# this is a command to run jetty
+
+	# check if it is a terminating command
+	for A in "$@" ; do
+		case $A in
+			--add-to-start* |\
+			--create-files |\
+			--create-startd |\
+			--download |\
+			--dry-run |\
+			--exec-print |\
+			--help |\
+			--info |\
+			--list-all-modules |\
+			--list-classpath |\
+			--list-config |\
+			--list-modules* |\
+			--stop |\
+			--update-ini |\
+			--version |\
+			-v )\
+			# It is a terminating command, so exec directly
+		        exec "$@"
+		esac
+	done
+
+	if [ -f /jetty-quickstart -a /jetty-quickstart -nt $JETTY_BASE/start.d ] ; then
+		set -- $(cat /jetty-quickstart)
+	else
+		# Do a jetty dry run to set the final command
+		set -- $("$@" --dry-run)
+	fi
+fi
+
 exec "$@"
