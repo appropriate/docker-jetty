@@ -24,7 +24,11 @@ ENV JETTY_GPG_KEYS \
 	# Joakim Erdfelt  <joakim@erdfelt.com>
 	BFBB21C246D7776836287A48A04E0C74ABB35FEA \
 	# Simone Bordet   <simone.bordet@gmail.com>
-	8B096546B1A8F02656B15D3B1677D141BCF3584D
+	8B096546B1A8F02656B15D3B1677D141BCF3584D \
+	# Greg Wilkins    <gregw@webtide.com>
+	FBA2B18D238AB852DF95745C76157BDF03D0DCD6 \
+	# Greg Wilkins    <gregw@webtide.com>
+	5C9579B3DB2E506429319AAEF33B071B29559E1E
 
 RUN set -xe \
 	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
