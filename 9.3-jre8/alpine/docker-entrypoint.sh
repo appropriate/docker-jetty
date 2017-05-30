@@ -65,11 +65,22 @@ if expr "$*" : '^java .*/start\.jar.*$' >/dev/null ; then
 		esac
 	done
 
-	if [ -f /jetty-quickstart -a /jetty-quickstart -nt $JETTY_BASE/start.d ] ; then
-		set -- $(cat /jetty-quickstart)
+	if [ -f /jetty-start ] ; then
+		if [ $JETTY_BASE/start.d -nt /jetty-start ] ; then
+			cat >&2 <<- 'EOWARN'
+			********************************************************************
+			WARNING: The $JETTY_BASE/start.d directory has been modified since
+			         the /jetty-start files was generated. Please either delete 
+			         the /jetty-start file or re-run /generate-jetty-start.sh 
+			         from a Dockerfile
+			********************************************************************
+			EOWARN
+		fi
+		echo $(date +'%Y-%m-%d %H:%M:%S.000'):INFO:docker-entrypoint:jetty start command from /jetty-start
+		set -- $(cat /jetty-start)
 	else
 		# Do a jetty dry run to set the final command
-		set -- $("$@" --dry-run)
+		set -- $("$@" --dry-run | sed 's/\\$//' )
 	fi
 fi
 
