@@ -40,7 +40,7 @@ RUN set -xe \
 	&& for key in $JETTY_GPG_KEYS; do \
 		gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; done \
 	&& gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
-	&& rm -r "$GNUPGHOME" \
+	&& rm -rf "$GNUPGHOME" \
 	&& tar -xvzf jetty.tar.gz \
 	&& mv jetty-distribution-$JETTY_VERSION/* ./ \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
