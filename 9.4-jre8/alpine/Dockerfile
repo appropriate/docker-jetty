@@ -57,7 +57,7 @@ RUN mkdir -p "$JETTY_BASE"
 WORKDIR $JETTY_BASE
 
 RUN set -xe \
-	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket,setuid" \
+	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket" \
 	&& chown -R jetty:jetty "$JETTY_BASE" \
 	&& rm -rf /tmp/hsperfdata_root
 
@@ -68,6 +68,7 @@ RUN set -xe \
 
 COPY docker-entrypoint.sh /
 
+USER jetty
 EXPOSE 8080
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["java","-jar","/usr/local/jetty/start.jar"]

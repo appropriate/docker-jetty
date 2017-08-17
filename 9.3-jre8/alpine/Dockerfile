@@ -57,11 +57,11 @@ ENV JETTY_BASE /var/lib/jetty
 RUN mkdir -p "$JETTY_BASE"
 WORKDIR $JETTY_BASE
 
-# Get the list of modules in the default start.ini and build new base with those modules, then add setuid
+# Get the list of modules in the default start.ini and build new base with those modules
 RUN set -xe \
 	&& apk add --no-cache --virtual .build-deps coreutils \
 	&& modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
-	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid" \
+	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules" \
 	&& chown -R jetty:jetty "$JETTY_BASE" \
 	&& apk del .build-deps \
 	&& rm -fr .build-deps \
@@ -74,6 +74,7 @@ RUN set -xe \
 
 COPY docker-entrypoint.sh /
 
+USER jetty
 EXPOSE 8080
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["java","-jar","/usr/local/jetty/start.jar"]
