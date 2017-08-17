@@ -38,4 +38,58 @@ if [ "$1" = "java" -a -n "$JAVA_OPTIONS" ] ; then
 	set -- java $JAVA_OPTIONS "$@"
 fi
 
+if expr "$*" : 'java .*/start\.jar.*$' >/dev/null ; then
+	# this is a command to run jetty
+
+	# check if it is a terminating command
+	for A in "$@" ; do
+		case $A in
+			--add-to-start* |\
+			--create-files |\
+			--create-startd |\
+			--download |\
+			--dry-run |\
+			--exec-print |\
+			--help |\
+			--info |\
+			--list-all-modules |\
+			--list-classpath |\
+			--list-config |\
+			--list-modules* |\
+			--stop |\
+			--update-ini |\
+			--version |\
+			-v )\
+			# It is a terminating command, so exec directly
+			exec "$@"
+		esac
+	done
+
+	if [ -f /jetty-start ] ; then
+		if [ $JETTY_BASE/start.d -nt /jetty-start ] ; then
+			cat >&2 <<- 'EOWARN'
+			********************************************************************
+			WARNING: The $JETTY_BASE/start.d directory has been modified since
+			         the /jetty-start files was generated. Please either delete 
+			         the /jetty-start file or re-run /generate-jetty-start.sh 
+			         from a Dockerfile
+			********************************************************************
+			EOWARN
+		fi
+		echo $(date +'%Y-%m-%d %H:%M:%S.000'):INFO:docker-entrypoint:jetty start command from /jetty-start
+		set -- $(cat /jetty-start)
+	else
+		# Do a jetty dry run to set the final command
+		"$@" --dry-run > /jetty-start
+		if [ $(egrep -v '\\$' /jetty-start | wc -l ) -gt 1 ] ; then
+			# command was more than a dry-run
+			cat /jetty-start \
+			| awk '/\\$/ { printf "%s", substr($0, 1, length($0)-1); next } 1' \
+			| egrep -v '[^ ]*java .* org\.eclipse\.jetty\.xml\.XmlConfiguration '
+			exit
+		fi
+		set -- $(sed 's/\\$//' /jetty-start)
+	fi
+fi
+
 exec "$@"

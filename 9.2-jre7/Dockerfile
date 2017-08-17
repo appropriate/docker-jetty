@@ -60,7 +60,7 @@ RUN set -xe \
 	&& mkdir -p "$TMPDIR" \
 	&& chown -R jetty:jetty "$TMPDIR"
 
-COPY docker-entrypoint.sh /
+COPY docker-entrypoint.sh generate-jetty-start.sh /
 
 EXPOSE 8080
 ENTRYPOINT ["/docker-entrypoint.sh"]
