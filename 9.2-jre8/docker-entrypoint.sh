@@ -80,15 +80,15 @@ if expr "$*" : 'java .*/start\.jar.*$' >/dev/null ; then
 		set -- $(cat /jetty-start)
 	else
 		# Do a jetty dry run to set the final command
-		"$@" --dry-run > /jetty-start
-		if [ $(egrep -v '\\$' /jetty-start | wc -l ) -gt 1 ] ; then
+		"$@" --dry-run > /tmp/jetty-start
+		if [ $(egrep -v '\\$' /tmp/jetty-start | wc -l ) -gt 1 ] ; then
 			# command was more than a dry-run
-			cat /jetty-start \
+			cat /tmp/jetty-start \
 			| awk '/\\$/ { printf "%s", substr($0, 1, length($0)-1); next } 1' \
 			| egrep -v '[^ ]*java .* org\.eclipse\.jetty\.xml\.XmlConfiguration '
 			exit
 		fi
-		set -- $(sed 's/\\$//' /jetty-start)
+		set -- $(sed 's/\\$//' /tmp/jetty-start)
 	fi
 fi
 
