@@ -26,12 +26,14 @@ if ! command -v -- "$1" >/dev/null 2>&1 ; then
 	set -- java -jar "$JETTY_HOME/start.jar" "$@"
 fi
 
-if [ -n "$TMPDIR" ] ; then
-	case "$JAVA_OPTIONS" in
-		*-Djava.io.tmpdir=*) ;;
-		*) JAVA_OPTIONS="-Djava.io.tmpdir=$TMPDIR $JAVA_OPTIONS" ;;
-	esac
+if [ -z "$TMPDIR" ] ; then
+	TMPDIR=/tmp/jetty
+	mkdir $TMPDIR 2>/dev/null
 fi
+case "$JAVA_OPTIONS" in
+	*-Djava.io.tmpdir=*) ;;
+	*) JAVA_OPTIONS="-Djava.io.tmpdir=$TMPDIR $JAVA_OPTIONS" ;;
+esac
 
 if [ "$1" = "java" -a -n "$JAVA_OPTIONS" ] ; then
 	shift
@@ -80,15 +82,15 @@ if expr "$*" : 'java .*/start\.jar.*$' >/dev/null ; then
 		set -- $(cat /jetty-start)
 	else
 		# Do a jetty dry run to set the final command
-		"$@" --dry-run > /tmp/jetty-start
-		if [ $(egrep -v '\\$' /tmp/jetty-start | wc -l ) -gt 1 ] ; then
+		"$@" --dry-run > /$TMPDIR/jetty-start
+		if [ $(egrep -v '\\$' $TMPDIR/jetty-start | wc -l ) -gt 1 ] ; then
 			# command was more than a dry-run
-			cat /tmp/jetty-start \
+			cat $TMPDIR/jetty-start \
 			| awk '/\\$/ { printf "%s", substr($0, 1, length($0)-1); next } 1' \
 			| egrep -v '[^ ]*java .* org\.eclipse\.jetty\.xml\.XmlConfiguration '
 			exit
 		fi
-		set -- $(sed 's/\\$//' /tmp/jetty-start)
+		set -- $(sed 's/\\$//' $TMPDIR/jetty-start)
 	fi
 fi
 
