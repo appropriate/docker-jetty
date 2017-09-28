@@ -35,11 +35,6 @@ case "$JAVA_OPTIONS" in
 	*) JAVA_OPTIONS="-Djava.io.tmpdir=$TMPDIR $JAVA_OPTIONS" ;;
 esac
 
-if [ "$1" = "java" -a -n "$JAVA_OPTIONS" ] ; then
-	shift
-	set -- java $JAVA_OPTIONS "$@"
-fi
-
 if expr "$*" : 'java .*/start\.jar.*$' >/dev/null ; then
 	# this is a command to run jetty
 
@@ -92,6 +87,12 @@ if expr "$*" : 'java .*/start\.jar.*$' >/dev/null ; then
 		fi
 		set -- $(sed 's/\\$//' $TMPDIR/jetty-start)
 	fi
+fi
+
+if [ "${1##*/}" = java -a -n "$JAVA_OPTIONS" ] ; then
+	java="$1"
+	shift
+	set -- "$java" $JAVA_OPTIONS "$@"
 fi
 
 exec "$@"
