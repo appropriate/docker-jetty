@@ -62,30 +62,40 @@ if expr "$*" : 'java .*/start\.jar.*$' >/dev/null ; then
 		esac
 	done
 
-	if [ -f /jetty-start ] ; then
-		if [ $JETTY_BASE/start.d -nt /jetty-start ] ; then
+	if [ $(whoami) != "jetty" ]; then
+		cat >&2 <<- EOWARN
+			********************************************************************
+			WARNING: User is $(whoami)
+			         The user should be (re)set to 'jetty' in the Dockerfile
+			********************************************************************
+		EOWARN
+	fi
+
+	if [ -f $JETTY_BASE/jetty.start ] ; then
+		if [ $JETTY_BASE/start.d -nt $JETTY_BASE/jetty.start ] ; then
 			cat >&2 <<- 'EOWARN'
 			********************************************************************
 			WARNING: The $JETTY_BASE/start.d directory has been modified since
-			         the /jetty-start files was generated. Please either delete 
-			         the /jetty-start file or re-run /generate-jetty-start.sh 
+			         the $JETTY_BASE/jetty.start files was generated. Either delete 
+			         the $JETTY_BASE/jetty.start file or re-run 
+				     /generate-jetty.start.sh 
 			         from a Dockerfile
 			********************************************************************
 			EOWARN
 		fi
-		echo $(date +'%Y-%m-%d %H:%M:%S.000'):INFO:docker-entrypoint:jetty start command from /jetty-start
-		set -- $(cat /jetty-start)
+		echo $(date +'%Y-%m-%d %H:%M:%S.000'):INFO:docker-entrypoint:jetty start command from \$JETTY_BASE/jetty.start
+		set -- $(cat $JETTY_BASE/jetty.start)
 	else
 		# Do a jetty dry run to set the final command
-		"$@" --dry-run > /$TMPDIR/jetty-start
-		if [ $(egrep -v '\\$' $TMPDIR/jetty-start | wc -l ) -gt 1 ] ; then
+		"$@" --dry-run > $JETTY_BASE/jetty.start
+		if [ $(egrep -v '\\$' $JETTY_BASE/jetty.start | wc -l ) -gt 1 ] ; then
 			# command was more than a dry-run
-			cat $TMPDIR/jetty-start \
+			cat $JETTY_BASE/jetty.start \
 			| awk '/\\$/ { printf "%s", substr($0, 1, length($0)-1); next } 1' \
 			| egrep -v '[^ ]*java .* org\.eclipse\.jetty\.xml\.XmlConfiguration '
 			exit
 		fi
-		set -- $(sed 's/\\$//' $TMPDIR/jetty-start)
+		set -- $(sed 's/\\$//' $JETTY_BASE/jetty.start)
 	fi
 fi
 
