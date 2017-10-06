@@ -26,14 +26,10 @@ if ! command -v -- "$1" >/dev/null 2>&1 ; then
 	set -- java -jar "$JETTY_HOME/start.jar" "$@"
 fi
 
-if [ -z "$TMPDIR" ] ; then
-	TMPDIR=/tmp/jetty
-	mkdir $TMPDIR 2>/dev/null
-fi
+: ${TMPDIR:=/tmp/jetty}
+[ -d "$TMPDIR" ] || mkdir -p $TMPDIR 2>/dev/null
 
-if [ -z "$JETTY_START" ] ; then
-	JETTY_START=$JETTY_BASE/jetty.start
-fi
+: ${JETTY_START:=$JETTY_BASE/jetty.start}
 
 case "$JAVA_OPTIONS" in
 	*-Djava.io.tmpdir=*) ;;
