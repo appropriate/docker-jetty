@@ -74,7 +74,7 @@ if expr "$*" : 'java .*/start\.jar.*$' >/dev/null ; then
 
 	if [ -f $JETTY_START ] ; then
 		if [ $JETTY_BASE/start.d -nt $JETTY_START ] ; then
-			cat >&2 <<- 'EOWARN'
+			cat >&2 <<- EOWARN
 			********************************************************************
 			WARNING: The $JETTY_BASE/start.d directory has been modified since
 			         the $JETTY_START files was generated. Either delete 
