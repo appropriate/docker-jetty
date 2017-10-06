@@ -26,10 +26,11 @@ if ! command -v -- "$1" >/dev/null 2>&1 ; then
 	set -- java -jar "$JETTY_HOME/start.jar" "$@"
 fi
 
-if [ -z "$TMPDIR" ] ; then
-	TMPDIR=/tmp/jetty
-	mkdir $TMPDIR 2>/dev/null
-fi
+: ${TMPDIR:=/tmp/jetty}
+[ -d "$TMPDIR" ] || mkdir -p $TMPDIR 2>/dev/null
+
+: ${JETTY_START:=$JETTY_BASE/jetty.start}
+
 case "$JAVA_OPTIONS" in
 	*-Djava.io.tmpdir=*) ;;
 	*) JAVA_OPTIONS="-Djava.io.tmpdir=$TMPDIR $JAVA_OPTIONS" ;;
@@ -62,30 +63,40 @@ if expr "$*" : 'java .*/start\.jar.*$' >/dev/null ; then
 		esac
 	done
 
-	if [ -f /jetty-start ] ; then
-		if [ $JETTY_BASE/start.d -nt /jetty-start ] ; then
-			cat >&2 <<- 'EOWARN'
+	if [ $(whoami) != "jetty" ]; then
+		cat >&2 <<- EOWARN
+			********************************************************************
+			WARNING: User is $(whoami)
+			         The user should be (re)set to 'jetty' in the Dockerfile
+			********************************************************************
+		EOWARN
+	fi
+
+	if [ -f $JETTY_START ] ; then
+		if [ $JETTY_BASE/start.d -nt $JETTY_START ] ; then
+			cat >&2 <<- EOWARN
 			********************************************************************
 			WARNING: The $JETTY_BASE/start.d directory has been modified since
-			         the /jetty-start files was generated. Please either delete 
-			         the /jetty-start file or re-run /generate-jetty-start.sh 
+			         the $JETTY_START files was generated. Either delete 
+			         the $JETTY_START file or re-run 
+			             /generate-jetty.start.sh 
 			         from a Dockerfile
 			********************************************************************
 			EOWARN
 		fi
-		echo $(date +'%Y-%m-%d %H:%M:%S.000'):INFO:docker-entrypoint:jetty start command from /jetty-start
-		set -- $(cat /jetty-start)
+		echo $(date +'%Y-%m-%d %H:%M:%S.000'):INFO:docker-entrypoint:jetty start from $JETTY_START
+		set -- $(cat $JETTY_START)
 	else
 		# Do a jetty dry run to set the final command
-		"$@" --dry-run > /$TMPDIR/jetty-start
-		if [ $(egrep -v '\\$' $TMPDIR/jetty-start | wc -l ) -gt 1 ] ; then
+		"$@" --dry-run > $JETTY_START
+		if [ $(egrep -v '\\$' $JETTY_START | wc -l ) -gt 1 ] ; then
 			# command was more than a dry-run
-			cat $TMPDIR/jetty-start \
+			cat $JETTY_START \
 			| awk '/\\$/ { printf "%s", substr($0, 1, length($0)-1); next } 1' \
 			| egrep -v '[^ ]*java .* org\.eclipse\.jetty\.xml\.XmlConfiguration '
 			exit
 		fi
-		set -- $(sed 's/\\$//' $TMPDIR/jetty-start)
+		set -- $(sed 's/\\$//' $JETTY_START)
 	fi
 fi
 
