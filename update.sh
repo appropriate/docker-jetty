@@ -58,7 +58,7 @@ for path in "${paths[@]}"; do
 		[ -d "$path/$variant" ] || continue
 		(
 			set -x
-			cp docker-entrypoint.sh generate-jetty-start.sh "$path/$variant"
+			cp docker-entrypoint.sh generate-jetty-start.sh network-probe "$path/$variant"
 			sed -ri '
 				s/^(FROM) .*/\1 '"$baseImage${variant:+-$variant}"'/;
 				s/^(ENV JETTY_VERSION) .*/\1 '"$fullVersion"'/;
