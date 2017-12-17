@@ -2,35 +2,6 @@
 
 set -e
 
-if [ "$WAIT_ON_HOST_PORT" != "" ];then
-	addr=`echo $WAIT_ON_HOST_PORT|awk -F: '{printf "%s",$1;}';`
-	port=`echo $WAIT_ON_HOST_PORT|awk -F: '{printf "%s",$2;}';`
-
-	if ! command -v bash >/dev/null 2>&1 ; then
-		if ! command -v nc >/dev/null 2>&1 ; then
-			cat >&2 <<- 'EOWARN'
-				************************************************************************
-				WARNING: Neither nc nor bash is found. Use of WAIT_ON_HOST_PORT requires
-				         either proper bash-support or netcat (nc).
-				************************************************************************
-			EOWARN
-		else
-			# This is the busybox/alpine nc-alternative (without proper bash-support)
-			echo Waiting for $addr:$port to become available
-			while ! nc -z -w 1 $addr $port; do sleep 0.3;echo -n .; done
-			echo NC: $addr:$port is up
-		fi
-	else
-		# This is the bash variant
-		echo Waiting for $addr:$port to become available
-		while ! timeout 1 bash -c \
-			"cat < /dev/null > /dev/tcp/$addr/$port" \
-			>/dev/null 2>&1; do sleep 0.3; echo -n .;
-		done
-		echo BASH: $addr:$port is up
-	fi
-fi
-
 if [ "$1" = jetty.sh ]; then
 	if ! command -v bash >/dev/null 2>&1 ; then
 		cat >&2 <<- 'EOWARN'
