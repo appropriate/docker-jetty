@@ -1,0 +1,78 @@
+#!/bin/sh
+
+BashProbe(){ bash -c "cat < /dev/null > /dev/tcp/$1/$2" 2>/dev/null; }
+
+NetcatProbe(){ nc -z -w 1 $1 $2; }
+
+Check(){ if Probe $1 $2; then echo $1:$2 up; else echo $1:$2 not responding; fi; }
+
+Dot(){ echo -n .; }
+
+Timestamp(){ :; }
+
+Waitfor(){ 
+	echo $(Timestamp) Waiting for $1:$2 to become available 
+	while ! Probe $1 $2; do sleep 0.3;Dot; done
+	echo $(Timestamp) $1:$2 is up
+}
+
+Usage(){ (
+	echo Usage: ...
+	echo $0 [arg1 [arg2 [arg3 ... [argN] ... ]]] 
+	echo
+	echo arg can be ...
+	echo " --help                     # Gives this help text and terminates"
+	echo " --check=smtp.domain.com:25 # Reports if host smtp.mydomain.com port 25 is available"
+	echo " --waitfor=dbhost:5432      # Wait until host dbhost port 5432 becomes available"
+	echo " dbhost:1521                # Shorthand notation for --waitfor=dbhost:1521."
+	echo " --use-netcat-probe         # Uses the netcat probe instead of bash probe. Default is to use bash probe if bash is available."
+	echo " --waitfor-timestamp        # Include timestamp in --waitfor output, may be useful to see how long time it takes for a service to become available"
+	echo " --no-waitfor-dot           # Do not print . in --waitfor output"
+	echo " --exit                     # Exit. Terminate immediately without starting /docker-entrypoint.sh at the end as would be the default behavior"
+	echo
+	echo The args are processed in sequence.
+	echo For example ...
+	echo $0 --waitfor=db:5432 --check=smtphost:25 --exit "# this command will 1) wait for db:5432 and 2) check if smtphost:25 is up and 3) exit"
+	echo
+	echo It is also possible to set args in the environment variable NETWORK_PROBE_ARGS.
+	echo Args from the environment variable NETWORK_PROBE_ARGS is prepended to the command line args. 
+	echo For example ...
+	echo export NETWORK_PROBE_ARGS='"'--check=smtp.domain.com:25 --waitfor-timestamp --waitfor=127.0.0.1:1521'"'
+	echo "$0 oracledb:1521 # will 1) check smtp.domain.com:25 and 2) set timestamp in output and 3) wait for 127.0.0.1:5432, and 4) wait for oracledb:1521"
+	echo
+	echo Command line arguments that is not recognized by $0 are handed over as command line arguments to /docker-entrypoint.sh
+	) >&2
+}
+
+
+if command -v bash >/dev/null 2>&1;then 
+	Probe(){ BashProbe $1 $2; } 
+elif command -v nc >/dev/null 2>&1;then 
+	Probe(){ NetcatProbe $1 $2; } 
+fi
+
+UnrecognizedArgs="";
+if command -v Probe >/dev/null 2>&1;then 
+	for x in $NETWORK_PROBE_ARGS $*; do
+		case $x in
+			--help|-h)		Usage; exit;;
+			--check=*) 		Check $(echo $x|sed s/--check=//g|tr : ' ');;
+			--waitfor=*:*|*:*) 	Waitfor $(echo $x|sed s/--waitfor=//g|tr : ' ');;
+			--use-netcat-probe) 	Probe(){ NetcatProbe $1 $2; };;
+			--waitfor-timestamp) 	Timestamp(){ echo -n $(date "+%Y%m%d %H:%M:%S"); };;
+			--no-waitfor-dot) 	Dot(){ :; };;
+			--exit) 		exit;;
+			*)  			UnrecognizedArgs="$UnrecognizedArgs $x";;
+		esac
+	done
+else
+	echo WARNING: Neither bash nor nc is available. $0 requires bash or nc to work >&2
+fi
+
+if [ -f /docker-entrypoint.sh ];then
+	echo $(Timestamp) Starting /docker-entrypoint.sh
+	sh /docker-entrypoint.sh $UnrecognizedArgs
+elif [ "$UnrecognizedArgs" != "" ];then
+	echo $(Timestamp) Executing $UnrecognizedArgs
+	$UnrecognizedArgs
+fi

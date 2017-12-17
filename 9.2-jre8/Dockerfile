@@ -62,6 +62,8 @@ RUN set -xe \
 
 COPY docker-entrypoint.sh generate-jetty-start.sh /
 
+COPY network-probe /usr/local/bin/
+
 USER jetty
 EXPOSE 8080
 ENTRYPOINT ["/docker-entrypoint.sh"]
