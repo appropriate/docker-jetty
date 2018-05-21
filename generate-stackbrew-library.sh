@@ -96,6 +96,7 @@ for path in "${paths[@]}"; do
 	cat <<-EOE
 
 		Tags:$(IFS=, ; echo "${tags[*]/#/ }")
+		Architectures: $(< "$directory/arches")
 		Directory: $directory
 		GitCommit: $commit
 	EOE
