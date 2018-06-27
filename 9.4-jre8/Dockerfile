@@ -58,6 +58,7 @@ RUN set -xe \
 	&& chown -R jetty:jetty "$TMPDIR"
 
 COPY docker-entrypoint.sh generate-jetty-start.sh /
+VOLUME /var/lib/jetty/webapps
 
 USER jetty
 EXPOSE 8080
