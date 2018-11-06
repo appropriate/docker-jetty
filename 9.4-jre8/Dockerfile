@@ -49,7 +49,8 @@ WORKDIR $JETTY_BASE
 
 RUN set -xe \
 	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket" \
-	&& chown -R jetty:jetty "$JETTY_BASE" \
+	&& chown -R jetty:0 "$JETTY_BASE" \
+	&& chmod -R g=u "$JETTY_BASE" \
 	&& rm -rf /tmp/hsperfdata_root
 
 ENV TMPDIR /tmp/jetty

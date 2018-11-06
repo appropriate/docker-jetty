@@ -52,7 +52,8 @@ WORKDIR $JETTY_BASE
 RUN modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
 	&& set -xe \
 	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules" \
-	&& chown -R jetty:jetty "$JETTY_BASE" \
+	&& chown -R jetty:0 "$JETTY_BASE" \
+	&& chmod -R g=u "$JETTY_BASE" \
 	&& rm -rf /tmp/hsperfdata_root
 
 ENV TMPDIR /tmp/jetty
