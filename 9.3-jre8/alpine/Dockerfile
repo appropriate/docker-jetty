@@ -33,13 +33,14 @@ ENV JETTY_GPG_KEYS \
 RUN set -xe \
 	# Install required packages for build time. Will be removed when build finishes.
 	&& apk add --no-cache --virtual .build-deps gnupg curl \
-
+	\
 	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
 	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
 	&& export GNUPGHOME="$(mktemp -d)" \
 	&& for key in $JETTY_GPG_KEYS; do \
-		gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; done \
+		gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; done \
 	&& gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
+	&& gpgconf --kill all \
 	&& rm -rf "$GNUPGHOME" \
 	&& tar -xvzf jetty.tar.gz \
 	&& mv jetty-distribution-$JETTY_VERSION/* ./ \
@@ -47,7 +48,7 @@ RUN set -xe \
 	&& rm -fr demo-base javadoc \
 	&& rm jetty.tar.gz* \
 	&& rm -fr jetty-distribution-$JETTY_VERSION/ \
-
+	\
 	# Remove installed packages and various cleanup
 	&& apk del .build-deps \
 	&& rm -fr .build-deps \
