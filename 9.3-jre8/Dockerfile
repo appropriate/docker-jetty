@@ -35,7 +35,7 @@ RUN set -xe \
 	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
 	&& export GNUPGHOME="$(mktemp -d)" \
 	&& for key in $JETTY_GPG_KEYS; do \
-		gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; done \
+		gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; done \
 	&& gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
 	&& gpgconf --kill all \
 	&& rm -rf "$GNUPGHOME" \
