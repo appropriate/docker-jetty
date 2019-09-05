@@ -59,7 +59,9 @@ if expr "$*" : 'java .*/start\.jar.*$' >/dev/null ; then
 			--version |\
 			-v )\
 			# It is a terminating command, so exec directly
-			exec "$@"
+			JAVA="$1"
+			shift
+			exec $JAVA $JAVA_OPTIONS "$@"
 		esac
 	done
 
@@ -88,7 +90,9 @@ if expr "$*" : 'java .*/start\.jar.*$' >/dev/null ; then
 		set -- $(cat $JETTY_START)
 	else
 		# Do a jetty dry run to set the final command
-		"$@" --dry-run > $JETTY_START
+		JAVA="$1"
+		shift
+		$JAVA $JAVA_OPTIONS "$@" --dry-run > $JETTY_START
 		if [ $(egrep -v '\\$' $JETTY_START | wc -l ) -gt 1 ] ; then
 			# command was more than a dry-run
 			cat $JETTY_START \
@@ -96,14 +100,14 @@ if expr "$*" : 'java .*/start\.jar.*$' >/dev/null ; then
 			| egrep -v '[^ ]*java .* org\.eclipse\.jetty\.xml\.XmlConfiguration '
 			exit
 		fi
-		set -- $(sed 's/\\$//' $JETTY_START)
+		set -- $(sed -e 's/ -Djava.io.tmpdir=[^ ]*//g' -e 's/\\$//' $JETTY_START)
 	fi
 fi
 
 if [ "${1##*/}" = java -a -n "$JAVA_OPTIONS" ] ; then
-	java="$1"
+	JAVA="$1"
 	shift
-	set -- "$java" $JAVA_OPTIONS "$@"
+	set -- "$JAVA" $JAVA_OPTIONS "$@"
 fi
 
 exec "$@"
