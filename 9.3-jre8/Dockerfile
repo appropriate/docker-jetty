@@ -13,12 +13,12 @@ ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distrib
 
 COPY --from=jettyproject:keys /keys/KEYS /tmp/
 
-RUN set -x \
-	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
+RUN set -xe \
+    && curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
 	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc
 
 RUN set -xe \
-	&& export GNUPGHOME="$(mktemp -d)" \
+    && export GNUPGHOME="$(mktemp -d)" \
 	&& gpg --import /tmp/KEYS \
 	&& gpg --verify jetty.tar.gz.asc \
 	&& rm -rf "$GNUPGHOME" \
