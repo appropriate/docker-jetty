@@ -11,7 +11,7 @@ WORKDIR $JETTY_HOME
 ENV JETTY_VERSION 9.4.18.v20190429
 ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-home/$JETTY_VERSION/jetty-home-$JETTY_VERSION.tar.gz
 
-COPY --from=jettyproject:keys /keys/KEYS /tmp/
+COPY --from=jettyproject/keys /keys/KEYS /tmp/
 
 RUN set -xe \
     # Install required packages for build time. Will be removed when build finishes.
