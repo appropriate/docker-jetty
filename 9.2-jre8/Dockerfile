@@ -11,7 +11,7 @@ WORKDIR $JETTY_HOME
 ENV JETTY_VERSION 9.2.28.v20190418
 ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
 
-COPY --from=jetty:keys /keys/KEYS /tmp/
+COPY --from=jettyproject:keys /keys/KEYS /tmp/
 
 RUN set -x \
 	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
