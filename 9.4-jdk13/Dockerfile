@@ -1,4 +1,4 @@
-FROM openjdk:8-jre AS Keys
+FROM openjdk:13 AS Keys
 
 # GPG Keys are personal keys of Jetty committers (see https://github.com/eclipse/jetty.project/blob/0607c0e66e44b9c12a62b85551da3a0edce0281e/KEYS.txt)
 ENV JETTY_GPG_KEYS \
@@ -24,32 +24,40 @@ RUN set -xe \
 	&& for key in $JETTY_GPG_KEYS; do \
 		GNUPGHOME=/jetty-keys gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; done 
 
-# Start a new image and import keys
-FROM openjdk:8-jre
+# Start a new image to import jetty and validate keys
+FROM openjdk:13 AS Jetty
 COPY --from=Keys /jetty-keys/ /jetty-keys/
 
-ENV JETTY_VERSION 9.2.28.v20190418
+ENV JETTY_VERSION 9.4.24.v20191120
 ENV JETTY_HOME /usr/local/jetty
-ENV JETTY_BASE /var/lib/jetty
-ENV TMPDIR /tmp/jetty
-ENV PATH $JETTY_HOME/bin:$PATH
-ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
+ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-home/$JETTY_VERSION/jetty-home-$JETTY_VERSION.tar.gz
 
 RUN set -xe \
-	&& groupadd -r jetty && useradd -r -g jetty jetty \
-	&& mkdir -p "$JETTY_HOME" "$JETTY_BASE" "$TMPDIR" \
+	&& mkdir -p "$JETTY_HOME" \
 	&& cd $JETTY_HOME \
 	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
 	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
 	&& GNUPGHOME=/jetty-keys gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
 	&& tar -xvf jetty.tar.gz --strip-components=1 \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
-	&& rm -fr demo-base javadoc jetty.tar.gz* \
+	&& rm -fr jetty.tar.gz*
+
+# Start a new image and import jetty
+FROM openjdk:13
+COPY --from=Jetty /usr/local/jetty/ /usr/local/jetty/
+
+ENV JETTY_HOME /usr/local/jetty
+ENV JETTY_BASE /var/lib/jetty
+ENV TMPDIR /tmp/jetty
+ENV PATH $JETTY_HOME/bin:$PATH
+
+RUN set -xe \
+	&& groupadd -r jetty && useradd -r -g jetty jetty \
+	&& mkdir -p "$JETTY_BASE" "$TMPDIR" \
 	&& cd $JETTY_BASE \
-	&& modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
-	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules" \
+	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket" \
 	&& chown -R jetty:jetty "$JETTY_HOME" "$JETTY_BASE" "$TMPDIR" \
-	&& rm -rf /tmp/hsperfdata_root /jetty-keys
+	&& rm -rf /tmp/hsperfdata_root
 
 WORKDIR $JETTY_BASE
 COPY docker-entrypoint.sh generate-jetty-start.sh /
@@ -58,3 +66,8 @@ USER jetty
 EXPOSE 8080
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["java","-jar","/usr/local/jetty/start.jar"]
+
+RUN set -xe \
+	&& chown -R jetty:jetty "$JETTY_BASE" \
+	&& rm -rf /tmp/hsperfdata_root
+

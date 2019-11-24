@@ -26,14 +26,14 @@ RUN set -xe \
 
 # Start a new image and import keys
 FROM openjdk:8-jre
-COPY --from=keys /jetty-keys/ /jetty-keys/
+COPY --from=Keys /jetty-keys/ /jetty-keys/
 
 ENV JETTY_VERSION 9.4.24.v20191120
 ENV JETTY_HOME /usr/local/jetty
 ENV JETTY_BASE /var/lib/jetty
 ENV TMPDIR /tmp/jetty
 ENV PATH $JETTY_HOME/bin:$PATH
-ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_VERSION/jetty-distribution-$JETTY_VERSION.tar.gz
+ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-home/$JETTY_VERSION/jetty-home-$JETTY_VERSION.tar.gz
 
 RUN set -xe \
 	&& groupadd -r jetty && useradd -r -g jetty jetty \
@@ -44,7 +44,7 @@ RUN set -xe \
 	&& GNUPGHOME=/jetty-keys gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
 	&& tar -xvf jetty.tar.gz --strip-components=1 \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
-	&& rm -fr demo-base javadoc jetty.tar.gz* \
+	&& rm -fr jetty.tar.gz* \
 	&& cd $JETTY_BASE \
 	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket" \
 	&& chown -R jetty:jetty "$JETTY_HOME" "$JETTY_BASE" "$TMPDIR" \

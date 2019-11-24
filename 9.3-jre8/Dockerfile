@@ -26,7 +26,7 @@ RUN set -xe \
 
 # Start a new image and import keys
 FROM openjdk:8-jre
-COPY --from=keys /jetty-keys/ /jetty-keys/
+COPY --from=Keys /jetty-keys/ /jetty-keys/
 
 ENV JETTY_VERSION 9.3.27.v20190418
 ENV JETTY_HOME /usr/local/jetty
