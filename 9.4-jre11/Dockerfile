@@ -28,7 +28,7 @@ RUN set -xe \
 FROM openjdk:11-jre
 COPY --from=keys /jetty-keys/ /jetty-keys/
 
-ENV JETTY_VERSION 9.4.23.v20191118
+ENV JETTY_VERSION 9.4.24.v20191120
 ENV JETTY_HOME /usr/local/jetty
 ENV JETTY_BASE /var/lib/jetty
 ENV TMPDIR /tmp/jetty
