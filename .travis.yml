@@ -4,12 +4,9 @@ language: bash
 dist: trusty
 
 env:
-  - VERSION=9.2-jre7
   - VERSION=9.2-jre8
   - VERSION=9.3-jre8
-  - VERSION=9.3-jre8 VARIANT=alpine
   - VERSION=9.4-jre8
-  - VERSION=9.4-jre8 VARIANT=alpine
   - VERSION=9.4-jre11
 
 install:
