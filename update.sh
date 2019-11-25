@@ -18,13 +18,6 @@ for path in "${paths[@]}"; do
 	version="${path%%-*}" # "9.2"
 	suffix="${path#*-}" # "jre7"
 
-	baseImage='openjdk'
-	case "$suffix" in
-		jre*|jdk*)
-			baseImage+=":${suffix:3}-${suffix:0:3}" # ":7-jre"
-			;;
-	esac
-
 	milestones=()
 	releaseCandidates=()
 	fullReleases=()
@@ -55,11 +48,7 @@ for path in "${paths[@]}"; do
 	fi
 
 	if [ -d "$path" ]; then
-	    set -x
 	    cp docker-entrypoint.sh generate-jetty-start.sh "$path"
-	    sed -ri '
-		    s/^(FROM) .*/\1 '"$baseImage"'/;
-		    s/^(ENV JETTY_VERSION) .*/\1 '"$fullVersion"'/;
-	    ' "$path/Dockerfile"
+	    sed -ri 's/^(ENV JETTY_VERSION) .*/\1 '"$fullVersion"'/; ' "$path/Dockerfile"
 	fi
 done
