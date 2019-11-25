@@ -1,4 +1,5 @@
-FROM openjdk:13 AS Keys
+# DO NOT EDIT. Edit Dockerfile-9.4 and use update.sh
+FROM openjdk:13-jdk AS Keys
 
 # GPG Keys are personal keys of Jetty committers (see https://github.com/eclipse/jetty.project/blob/0607c0e66e44b9c12a62b85551da3a0edce0281e/KEYS.txt)
 ENV JETTY_GPG_KEYS \
@@ -25,7 +26,7 @@ RUN set -xe \
 		GNUPGHOME=/jetty-keys gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; done 
 
 # Start a new image to import jetty and validate keys
-FROM openjdk:13 AS Jetty
+FROM openjdk:13-jdk AS Jetty
 COPY --from=Keys /jetty-keys/ /jetty-keys/
 
 ENV JETTY_VERSION 9.4.24.v20191120
@@ -42,8 +43,8 @@ RUN set -xe \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
 	&& rm -fr jetty.tar.gz*
 
-# Start a new slim image and import jetty
-FROM openjdk:13-slim
+# Start a new image and import jetty
+FROM openjdk:13-jdk-slim
 COPY --from=Jetty /usr/local/jetty/ /usr/local/jetty/
 
 ENV JETTY_HOME /usr/local/jetty
@@ -70,4 +71,3 @@ CMD ["java","-jar","/usr/local/jetty/start.jar"]
 RUN set -xe \
 	&& chown -R jetty:jetty "$JETTY_BASE" \
 	&& rm -rf /tmp/hsperfdata_root
-

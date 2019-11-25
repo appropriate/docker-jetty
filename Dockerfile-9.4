@@ -1,4 +1,3 @@
-# DO NOT EDIT. Edit Dockerfile-9.4 and use update.sh
 FROM openjdk:13-jdk AS Keys
 
 # GPG Keys are personal keys of Jetty committers (see https://github.com/eclipse/jetty.project/blob/0607c0e66e44b9c12a62b85551da3a0edce0281e/KEYS.txt)
@@ -44,7 +43,7 @@ RUN set -xe \
 	&& rm -fr jetty.tar.gz*
 
 # Start a new image and import jetty
-FROM openjdk:13-jdk
+FROM openjdk:LABEL
 COPY --from=Jetty /usr/local/jetty/ /usr/local/jetty/
 
 ENV JETTY_HOME /usr/local/jetty
