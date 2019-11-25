@@ -54,15 +54,12 @@ for path in "${paths[@]}"; do
 		exit 1
 	fi
 
-	for variant in alpine ''; do
-		[ -d "$path/$variant" ] || continue
-		(
-			set -x
-			cp docker-entrypoint.sh generate-jetty-start.sh "$path/$variant"
-			sed -ri '
-				s/^(FROM) .*/\1 '"$baseImage${variant:+-$variant}"'/;
-				s/^(ENV JETTY_VERSION) .*/\1 '"$fullVersion"'/;
-			' "$path/$variant/Dockerfile"
-		)
-	done
+	if [ -d "$path" ]; then
+	    set -x
+	    cp docker-entrypoint.sh generate-jetty-start.sh "$path"
+	    sed -ri '
+		    s/^(FROM) .*/\1 '"$baseImage"'/;
+		    s/^(ENV JETTY_VERSION) .*/\1 '"$fullVersion"'/;
+	    ' "$path/Dockerfile"
+	fi
 done
