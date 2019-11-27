@@ -1,5 +1,9 @@
 # DO NOT EDIT. Edit Dockerfile-9.4 and use update.sh
-FROM openjdk:13-jdk AS Keys
+FROM openjdk:13-jdk AS Jetty94
+
+ENV JETTY_VERSION 9.4.24.v20191120
+ENV JETTY_HOME /usr/local/jetty
+ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-home/$JETTY_VERSION/jetty-home-$JETTY_VERSION.tar.gz
 
 # GPG Keys are personal keys of Jetty committers (see https://github.com/eclipse/jetty.project/blob/0607c0e66e44b9c12a62b85551da3a0edce0281e/KEYS.txt)
 ENV JETTY_GPG_KEYS \
@@ -25,14 +29,6 @@ RUN set -xe \
 	&& for key in $JETTY_GPG_KEYS; do \
 		GNUPGHOME=/jetty-keys gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; done 
 
-# Start a new image to import jetty and validate keys
-FROM openjdk:13-jdk AS Jetty
-COPY --from=Keys /jetty-keys/ /jetty-keys/
-
-ENV JETTY_VERSION 9.4.24.v20191120
-ENV JETTY_HOME /usr/local/jetty
-ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-home/$JETTY_VERSION/jetty-home-$JETTY_VERSION.tar.gz
-
 RUN set -xe \
 	&& mkdir -p "$JETTY_HOME" \
 	&& cd $JETTY_HOME \
@@ -43,9 +39,9 @@ RUN set -xe \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
 	&& rm -fr jetty.tar.gz*
 
-# Start a new image and import jetty
+# Start a new image on the target and import jetty
 FROM openjdk:11-jre-slim
-COPY --from=Jetty /usr/local/jetty/ /usr/local/jetty/
+COPY --from=Jetty94 /usr/local/jetty/ /usr/local/jetty/
 
 ENV JETTY_HOME /usr/local/jetty
 ENV JETTY_BASE /var/lib/jetty
