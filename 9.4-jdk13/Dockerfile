@@ -38,24 +38,10 @@ RUN set -xe \
 	&& GNUPGHOME=/jetty-keys gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
 	&& tar -xvf jetty.tar.gz --strip-components=1 \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
-	&& rm -fr jetty.tar.gz* \
+	&& rm -fr jetty.tar.gz* /jetty-keys \
 	&& mkdir -p "$JETTY_BASE" \
 	&& cd $JETTY_BASE \
 	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket" \
-	&& rm -rf /tmp/hsperfdata_root
-
-# Start a new image on the target and import jetty
-FROM openjdk:13-jdk
-
-ENV JETTY_HOME /usr/local/jetty
-ENV JETTY_BASE /var/lib/jetty
-ENV TMPDIR /tmp/jetty
-ENV PATH $JETTY_HOME/bin:$PATH
-
-COPY --from=Jetty94 $JETTY_HOME $JETTY_HOME
-COPY --from=Jetty94 $JETTY_BASE $JETTY_BASE
-
-RUN set -xe \
 	&& mkdir -p "$TMPDIR" \
 	&& groupadd -r jetty && useradd -r -g jetty jetty \
 	&& chown -R jetty:jetty "$JETTY_HOME" "$JETTY_BASE" "$TMPDIR" \
