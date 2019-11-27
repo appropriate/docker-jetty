@@ -10,8 +10,8 @@ defaultJdk="jdk13"
 
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
-paths=( **/*/Dockerfile )
-paths=( $( printf '%s\n' "${paths[@]%/Dockerfile}" | sort -t/ -k 1,1Vr -k 2,2 ) )
+paths=( **/Dockerfile )
+paths=( $( printf '%s\n' "${paths[@]%/Dockerfile}" | sort -k 1.1,1.3Vr -k 1,8 ) )
 url='https://github.com/appropriate/docker-jetty.git'
 
 cat <<-EOH
@@ -36,9 +36,14 @@ addTag() {
 for path in "${paths[@]}"; do
 	tags=()
 
-	directory="$path"
-	commit="$(git log -1 --format='format:%H' -- "$directory")"
-	version="$(grep -m1 'ENV JETTY_VERSION ' "$directory/Dockerfile" | cut -d' ' -f3)"
+	commit="$(git log -1 --format='format:%H' -- "$path")"
+
+	major="${path%%-*}" # "9.2"
+        if [[ "$major" == "9.4" ]]; then
+		version="$(grep -m1 'ENV JETTY_VERSION ' "9.4-jdk13/Dockerfile" | cut -d' ' -f3)"
+	else
+		version="$(grep -m1 'ENV JETTY_VERSION ' "$path/Dockerfile" | cut -d' ' -f3)"
+	fi
 
 	# Determine the JDK
 	jdk=${path#*-} # "jre7"
@@ -82,8 +87,8 @@ for path in "${paths[@]}"; do
 	cat <<-EOE
 
 		Tags:$(IFS=, ; echo "${tags[*]/#/ }")
-		Architectures: $(< "$directory/arches")
-		Directory: $directory
+		Architectures: $(< "$path/arches")
+		Directory: $path
 		GitCommit: $commit
 	EOE
 done
