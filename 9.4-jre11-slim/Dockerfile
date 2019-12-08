@@ -29,13 +29,24 @@ ENV JETTY_GPG_KEYS \
 
 RUN set -xe \
 	&& mkdir /jetty-keys \
-	&& for key in $JETTY_GPG_KEYS; do \
-		GNUPGHOME=/jetty-keys gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; done \
+        && export GNUPGHOME=/jetty-keys; \
+        for key in $JETTY_GPG_KEYS; do \
+                for server in \
+                        ha.pool.sks-keyservers.net \
+                        p80.pool.sks-keyservers.net:80 \
+                        ipv4.pool.sks-keyservers.net \
+                        pgp.mit.edu ; \
+                do \
+                        if gpg --batch --keyserver "$server" --recv-keys "$key"; then \
+                                break; \
+                        fi; \
+                done; \
+        done \
 	&& mkdir -p "$JETTY_HOME" \
 	&& cd $JETTY_HOME \
 	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
 	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
-	&& GNUPGHOME=/jetty-keys gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
+	&& gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
 	&& tar -xvf jetty.tar.gz --strip-components=1 \
 	&& sed -i '/jetty-logging/d' etc/jetty.conf \
 	&& rm -fr jetty.tar.gz* \
