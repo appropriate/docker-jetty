@@ -1,4 +1,4 @@
-VERSIONS = $(foreach df,$(wildcard */alpine/Dockerfile */Dockerfile),$(df:%/Dockerfile=%))
+VERSIONS = $(foreach df,$(wildcard */Dockerfile),$(df:%/Dockerfile=%))
 
 all: build
 
