@@ -1,5 +1,5 @@
 # DO NOT EDIT. Edit Dockerfile-9.4 and use update.sh
-FROM openjdk:13-jdk AS Jetty94
+FROM openjdk:11-jre
 
 ENV JETTY_VERSION 9.4.24.v20191120
 ENV JETTY_HOME /usr/local/jetty
@@ -27,9 +27,10 @@ ENV JETTY_GPG_KEYS \
 	# Greg Wilkins    <gregw@webtide.com>
 	5C9579B3DB2E506429319AAEF33B071B29559E1E
 
-RUN set -xe \
-	&& mkdir /jetty-keys \
-        && export GNUPGHOME=/jetty-keys; \
+RUN set -xe ; \
+	# fetch GPG keys
+        export GNUPGHOME=/jetty-keys ; \
+	mkdir -p "$GNUPGHOME" ; \
         for key in $JETTY_GPG_KEYS; do \
                 for server in \
                         ha.pool.sks-keyservers.net \
@@ -41,36 +42,38 @@ RUN set -xe \
                                 break; \
                         fi; \
                 done; \
-        done \
-	&& mkdir -p "$JETTY_HOME" \
-	&& cd $JETTY_HOME \
-	&& curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz \
-	&& curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc \
-	&& gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz \
-	&& tar -xvf jetty.tar.gz --strip-components=1 \
-	&& sed -i '/jetty-logging/d' etc/jetty.conf \
-	&& rm -fr jetty.tar.gz* \
-	&& mkdir -p "$JETTY_BASE" \
-	&& cd $JETTY_BASE \
-	&& java -jar "$JETTY_HOME/start.jar" --create-startd --add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket" \
-	&& rm -rf /tmp/hsperfdata_root
-
-# Start a new image on the target and import jetty
-FROM openjdk:11-jre
-
-ENV JETTY_HOME /usr/local/jetty
-ENV JETTY_BASE /var/lib/jetty
-ENV TMPDIR /tmp/jetty
-ENV PATH $JETTY_HOME/bin:$PATH
-
-COPY --from=Jetty94 $JETTY_HOME $JETTY_HOME
-COPY --from=Jetty94 $JETTY_BASE $JETTY_BASE
-
-RUN set -xe \
-	&& mkdir -p "$TMPDIR" \
-	&& groupadd -r jetty && useradd -r -g jetty jetty \
-	&& chown -R jetty:jetty "$JETTY_HOME" "$JETTY_BASE" "$TMPDIR" \
-	&& rm -rf /tmp/hsperfdata_root
+        done ; \
+	#
+	# Fetch jetty release into JETTY_HOME
+	mkdir -p "$JETTY_HOME" ; \
+	cd $JETTY_HOME ; \
+	curl -SL "$JETTY_TGZ_URL" -o jetty.tar.gz ; \
+	curl -SL "$JETTY_TGZ_URL.asc" -o jetty.tar.gz.asc ; \
+	#
+	# Verify GPG signatures
+	gpg --batch --verify jetty.tar.gz.asc jetty.tar.gz ; \
+	#
+	# Unpack jetty
+	tar -xvf jetty.tar.gz --strip-components=1 ; \
+	sed -i '/jetty-logging/d' etc/jetty.conf ; \
+	#
+	# Create and configure the JETTY_HOME directory
+	mkdir -p "$JETTY_BASE" ; \
+	cd $JETTY_BASE ; \
+	java -jar "$JETTY_HOME/start.jar" --create-startd \
+		--add-to-start="server,http,deploy,jsp,jstl,ext,resources,websocket" ; \
+	mkdir -p "$TMPDIR" ; \
+	groupadd -r jetty && useradd -r -g jetty jetty ; \
+	chown -R jetty:jetty "$JETTY_HOME" "$JETTY_BASE" "$TMPDIR" ; \
+	#
+	# Cleanup
+	rm -rf /tmp/hsperfdata_root ; \
+	rm -fr $JETTY_HOME/jetty.tar.gz* ; \
+	rm -fr /jetty-keys $GNUPGHOME ; \
+	rm -rf /tmp/hsperfdata_root ; \
+	#
+	# Basic smoke test
+	java -jar "$JETTY_HOME/start.jar" --list-config ;
 
 WORKDIR $JETTY_BASE
 COPY docker-entrypoint.sh generate-jetty-start.sh /

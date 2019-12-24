@@ -49,11 +49,13 @@ for path in "${paths[@]}"; do
 		exit 1
 	fi
 
+	echo Full Version ${fullVersion}
+
 	if [ -d "$path" ]; then
 	    cp docker-entrypoint.sh generate-jetty-start.sh "$path"
 	    if [ "$version" == "9.4" ] ; then
 	        echo '# DO NOT EDIT. Edit Dockerfile-9.4 and use update.sh' > "$path"/Dockerfile
-	    	cat Dockerfile-9.4 >> "$path"/Dockerfile
+	    	cat Dockerfile-9.4${variant:+-$variant} >> "$path"/Dockerfile
 	        sed -ri 's/^(FROM openjdk:)LABEL/\1'"$label"'/; ' "$path/Dockerfile"
 	    fi
 	    sed -ri 's/^(ENV JETTY_VERSION) .*/\1 '"$fullVersion"'/; ' "$path/Dockerfile"
