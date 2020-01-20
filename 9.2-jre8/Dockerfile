@@ -1,4 +1,4 @@
-FROM openjdk:13-jdk AS Jetty94
+FROM openjdk:8-jre
 
 ENV JETTY_VERSION 9.2.29.v20191105
 ENV JETTY_HOME /usr/local/jetty
@@ -53,20 +53,6 @@ RUN set -xe \
 	&& cd $JETTY_BASE \
 	&& modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
 	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules" \
-	&& rm -rf /tmp/hsperfdata_root
-
-# Start a new image on the target and import jetty
-FROM openjdk:8-jre
-
-ENV JETTY_HOME /usr/local/jetty
-ENV JETTY_BASE /var/lib/jetty
-ENV TMPDIR /tmp/jetty
-ENV PATH $JETTY_HOME/bin:$PATH
-
-COPY --from=Jetty94 $JETTY_HOME $JETTY_HOME
-COPY --from=Jetty94 $JETTY_BASE $JETTY_BASE
-
-RUN set -xe \
 	&& mkdir -p "$TMPDIR" \
 	&& groupadd -r jetty && useradd -r -g jetty jetty \
 	&& chown -R jetty:jetty "$JETTY_HOME" "$JETTY_BASE" "$TMPDIR" \
